@@ -1,0 +1,19 @@
+```{r}
+#| echo: false
+#| eval: false
+#| warning: false
+#| message: false
+#| comment: for testing
+source("../tools/make_lotus3_summ_table.R")
+```
+
+
+```{r}
+#| echo: false
+#| eval: true
+#| warning: false
+#| message: false
+#| comment: for running
+source("tools/make_lotus3_summ_table.R")
+```
+

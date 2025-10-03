@@ -1,0 +1,76 @@
+---
+title: "Data Portal"
+listing: 
+  id: dada2-listing
+  contents: listings/data-dada2.yml
+metadata-files: 
+  - listings/_metadata.yml
+format:
+  html:
+    code-fold: false
+    toc: true
+    toc-depth: 0
+---
+
+{{< include include/_listing-preamble.qmd >}}
+
+Here we provide two options for processing sequence data--the detailed pipeline (listed in the table) and a [quick set of commands linked below](#asv-processing). 
+
+::: {#dada2-listing .column-body-outset-right}
+:::
+
+{{< include include/_data-dada2.qmd >}}
+
+{{< include include/_listing-footer.qmd >}}
+
+```{r}
+#| echo: false
+#| eval: true
+#| include: false
+#| warning: true
+#| message: false
+#| comment: copy script files to `portal` page in case they change
+# FOR SSU only. need to revise for MG 
+library(here)
+
+from_here <- "working_files/ssu/"
+to_here   <- "workflows/portal/include/scripts"
+
+# source files (relative paths)
+files <- c(
+  "dada2/BCS_26.R",
+  "dada2/BCS_28.R",
+  "dada2/BCS_29.R",
+  "dada2/BCS_30.R",
+  "dada2/BCS_34.R",
+  "dada2/BCS_35.R",
+  "dada2/merge_asv_workflow.R",
+  "otu/otu_batchfile_processing",
+  "med/med_batchfile_processing",
+  "med/mothur2oligo.sh",
+  "med/renamer.pl"
+)
+
+# build destination names by prefixing basename with "_"
+dest_files <- file.path(
+  dirname(files),
+  paste0("_", basename(files))
+)
+
+# copy
+mapply(
+  function(src, dest) {
+    file.copy(
+      here(from_here, src),
+      here(to_here, dest),
+      overwrite = TRUE,
+      recursive = FALSE,
+      copy.mode = TRUE,
+      copy.date = FALSE
+    )
+  },
+  files, dest_files
+)
+
+```
+

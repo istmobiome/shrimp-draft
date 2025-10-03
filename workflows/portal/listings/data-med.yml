@@ -1,0 +1,72 @@
+- name: Curated Data
+  path: /share/ssu/med/med_curated_data.zip
+  filename: med_curated_data.zip
+  description: |
+    Archive containing the curated output of MED pipeline–-OTU table, taxonomy table, sample metadata, & representative fasta sequences. Data is available as a) stand-alone text files, b) bundled in a microtable object, and c) bundled in a phyloseq object.  Archive also includes a table tracking sample read changes.
+
+- name: Sequence Data
+  path: https://www.ebi.ac.uk/ena/browser/view/PRJEB36632
+  filename: PRJEB36632  
+  description: |
+    Trimmed (primers removed) 16S rRNA data from 1909 samples. 
+
+- name: Processing Data & Scripts
+  path: /share/ssu/med/med_processing.zip
+  filename: med_processing.zip
+  description: |
+    Archived directory containing fastq rename tables, fastq rename results, sample data, mothur batchfile script, MED prep scripts, MED mapping file, pipeline read changes, &  Hydra job scripts.
+
+- name: Detailed Pipeline
+  path: /workflows/ssu/med/
+  filename: MED workflow  
+  description: |
+    Detailed workflow for 16S rRNA analysis using MED. Workflow uses paired end reads, beginning with raw fastq files, ending with sequence &  taxonomy tables. Microtable &  phyloseq objects are produced to collate the data for downstream analysis.
+
+#- name: Fastq rename tables
+#  path: /share/ssu/sampledata/fastq_rename_lookup.zip
+#  filename: fastq_rename_lookup.zip  
+#  description: |
+#    Lookup tables for renaming fastq files prior to analysis
+
+#- name: Fastq rename results
+#  path: /share/ssu/sampledata/fastq_rename_results.zip
+#  filename: fastq_rename_results.zip  
+#  description: |
+#    Name changes recorded for fastq files
+
+#- name: Sample data
+#  path: /share/ssu/sampledata/all_metadata.txt
+#  filename: all_metadata.txt  
+#  description: |
+#    16S rRNA sample data
+
+#- name: mothur processing scripts
+#  path: /share/ssu/med/med_batchfile_processing.zip
+#  filename: med_batchfile_processing.zip  
+#  description: |
+#    The mothur portion of the MED pipeline
+
+#- name: MED prep scripts
+#  path: /share/ssu/med/mothur2oligo.zip
+#  filename: mothur2oligo.zip  
+#  description: |
+#    The mothur2oligo scripts needed to prep the data for MED analysis
+
+#- name: Mapping file
+#  path: /share/ssu/med/med_mapping.txt
+#  filename: med_mapping.txt
+#  description: |
+#    The sample mapping needed to run the MED analysis
+
+#- name: Hydra job scripts
+#  path: /share/ssu/med/med_hydra_scripts.zip
+#  filename: med_hydra_scripts.zip  
+#  description: |
+#    Job scripts if you are running workflows on Smithsonian's compute cluster, Hydra
+
+#- name: Pipeline read changes
+#  path: /share/ssu/med/mothur_med_pipeline_read_changes.txt
+#  filename: mothur_med_pipeline_read_changes.txt
+#  description: |
+#    Table showing read changes for each sample through the processing pipeline
+

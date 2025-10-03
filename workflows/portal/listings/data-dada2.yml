@@ -1,0 +1,60 @@
+- name: Curated Data
+  path: /share/ssu/dada2/dada2_curated_data.zip
+  filename: dada2_curated_data.zip
+  description: |
+    Archive containing the curated output of dada2 pipeline–-ASV table, taxonomy table, sample metadata, & representative fasta sequences. Data is available as a) stand-alone text files, b) bundled in a microtable object, and c) bundled in a phyloseq object.  Archive also includes a table tracking sample read changes.
+
+- name: Sequence Data
+  path: https://www.ebi.ac.uk/ena/browser/view/PRJEB36632
+  filename: PRJEB36632  
+  description: |
+    Trimmed (primers removed) 16S rRNA data from 1909 samples. 
+
+- name: Processing Data & Scripts
+  path: /share/ssu/dada2/dada2_processing.zip
+  filename: dada2_processing.zip
+  description: |
+    Archived directory containing fastq rename tables, fastq rename results, sample data, dada2 scripts, dada (command) results, run read changes, pipeline read changes, &  Hydra job scripts.
+
+- name: Detailed Pipeline
+  path: /workflows/ssu/dada2/
+  filename: ASV workflow  
+  description: |
+    Detailed workflow for 16S rRNA ASV analysis using Dada2. Workflow uses paired end reads, beginning with raw fastq files, ending with sequence &  taxonomy tables. Microtable & phyloseq objects are produced to collate the data for downstream analysis.
+
+#- name: Fastq rename tables
+#  path: /share/ssu/sampledata/fastq_rename_lookup.zip
+#  filename: fastq_rename_lookup.zip  
+#  description: |
+#    Lookup tables for renaming fastq files prior to analysis
+
+#- name: Fastq rename results
+#  path: /share/ssu/sampledata/fastq_rename_results.zip
+#  filename: fastq_rename_results.zip  
+#  description: |
+#    Name changes recorded for fastq files
+
+#- name: Sample data
+#  path: /share/ssu/sampledata/all_metadata.txt
+#  filename: all_metadata.txt  
+#  description: |
+#    16S rRNA sample data
+
+#- name: Processing scripts
+#  path: /share/ssu/dada2/dada2_scripts.zip
+#  filename: dada2_scripts.zip 
+#  description: |
+#    R scripts for individual runs and merged runs workflows with Dada2
+
+#- name: Pipeline read changes
+#  path: /share/ssu/dada2/dada2_pipeline_read_changes.txt
+#  filename: dada2_pipeline_read_changes.txt 
+#  description: |
+#    Table showing read changes for each sample through the processing pipeline
+
+#- name: Hydra job scripts
+#  path: /share/ssu/dada2/dada2_hydra_scripts.zip
+#  filename: dada2_hydra_scripts.zip  
+#  description: |
+#    Job scripts if you are running workflows on Smithsonian's compute cluster, Hydra
+

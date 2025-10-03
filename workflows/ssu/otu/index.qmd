@@ -1,0 +1,760 @@
+---
+title: "4. OTU Workflow"
+description: |
+  Workflow for processing 16S rRNA samples for OTU analysis using mothur. Workflow uses paired end reads, beginning with raw fastq files, ending with sequence and taxonomy tables. A Microtable Object is produced to collate the data for downstream analysis. 
+listing: 
+    id: otu-listing
+    contents: data-otu.yml
+    type: table
+    sort-ui: false
+    filter-ui: false
+    fields: 
+      - filename
+      - description
+    field-links: 
+      - filename
+    field-display-names: 
+      filename: File Name
+      description: Description
+---
+
+{{< include /include/_setup.qmd >}}
+
+```{r}
+#| echo: false
+#| eval: true
+#| comment: set wd for here
+remove(list = ls())
+workflow_name <- "otu" # e.g., med, dada2, etc
+work_here <- paste0("working_files/ssu/", workflow_name)
+share_here <- paste0("share/ssu/", workflow_name)
+source(here("assets/scripts", "summarize_objs.R"))
+source(here("assets/scripts", "mia_metrics.R"))
+```
+
+## Workflow Input
+
+::: {.callout-note icon=false}
+## Data & Scripts
+
+Fastq sequence files, scripts, and other assets for running this workflow can be found on the [OTU Data Portal](/workflows/portal/data-otu.qmd) page. 
+
+The Data Portal page also contains a link to the curated output of this pipeline–-feature-sample count table, taxonomy table, sample metadata, & representative fasta sequences. Data is available as stand-alone text files, OR bundled in microtable and phyloseq objects. Archive also includes a table tracking sample read changes.
+:::
+
+#### Required Packages & Software
+
+To run this workflow you need to have [mothur installed](https://mothur.org/wiki/installation/) and you will need the [tidyverse](https://www.tidyverse.org) package. 
+
+## Overview
+
+This is a standard pipeline for generating OTUs using [mothur](https://mothur.org/)[@schloss2009mothur]. We generally followed the mothur [MiSeq SOP](https://mothur.org/wiki/miseq_sop/) when building this pipeline. Since this SOP is heavily annotated we will keep our comments here to a minimum. 
+
+:::{.columns}
+:::{.column width="50%"}
+{{< include include/_otu_flowchart_1.qmd >}}
+:::
+:::{.column width="50%"}
+{{< include include/_otu_flowchart_2.qmd >}}
+:::
+:::
+
+# Read Processing
+
+{{< include include/_OTU_Part1.qmd >}}
+
+# Dataset Prep
+
+In this next part of the workflow our main goal is to create a *microtable object* using the R package [microeco](https://joey711.github.io/phyloseq/) [@liu2021microeco]. The microtable will be used to store the OTU by sample data as well the taxonomic, fasta, and sample data in a single object. More on that in a moment.
+
+```{r}
+#| eval: true
+#| echo: false
+#| message: false 
+#| results: hide
+#remove(list = ls())
+load(here("page_build", "otu_part2.rdata"))
+objects()
+```
+
+## Getting Files from Mothur
+
+To create a microtable object we need a a sequence table, taxonomy table, and a sample data table. To generate the sequence table we need a shared file from mothur, which we can generate using the command `make.shared`. The data in a shared file represent the number of times that an OTU is observed in multiple samples. 
+
+```{verbatim}
+make.shared(list=final.opti_mcc.list, count=final.count_table, label=0.03)
+```
+
+```         
+0.03
+
+Output File Names:
+final.opti_mcc.shared
+```
+Next we use `classify.otu` to get the OTU taxonomy table. 
+
+```{verbatim}
+classify.otu(list=final.opti_mcc.list, count=final.count_table, taxonomy=final.taxonomy, label=0.03)
+```
+
+```         
+0.03
+
+Output File Names: 
+final.opti_mcc.0.03.cons.taxonomy
+final.opti_mcc.0.03.cons.tax.summary
+```
+
+```{verbatim}
+count.groups(shared=final.opti_mcc.shared)
+```
+
+```         
+Size of smallest group: 14.
+
+Total seqs: 34611554.
+
+Output File Names: 
+final.opti_mcc.count.summary
+```
+
+## Prep Data for `microeco`
+
+Like any tool, the microeco package needs the data in a specific form. I formatted our data to match the mock data in the microeco tutorial, specifically [this section](https://chiliubio.github.io/microeco_tutorial/basic-class.html#prepare-the-example-data).
+
+### A. Taxonomy Table
+
+Here is what the taxonomy table looks like in the mock data.
+
+```{r}
+#| eval: false
+#| echo: true
+pandoc.table(taxonomy_table_16S[10:12, 1:3], emphasize.rownames = FALSE)
+```
+
+Our taxonomy file (below) needs a little wrangling to be properly formatted. 
+
+```{r}
+#| echo: true
+#| eval: false
+tmp_tax <- read_delim(here(work_here, "final.opti_mcc.0.03.cons.taxonomy"), 
+                      delim = "\t")
+```
+
+```{r}
+#| echo: false
+#| eval: true
+#tax1 <- tmp_tax
+pandoc.table(tax1[11:13, 1:3], emphasize.rownames = FALSE, split.tables = Inf)
+```
+
+Some fancy string manipulation...
+
+```{r}
+#| echo: true
+#| eval: false
+tmp_tax <- data.frame(sapply(tmp_tax, 
+                             gsub, 
+                             pattern = "\\(\\d+\\)", 
+                             replacement = ""))
+tmp_tax <- data.frame(sapply(tmp_tax, 
+                             gsub, 
+                             pattern = ";$", 
+                             replacement = ""))
+tmp_tax <- separate_wider_delim(tmp_tax, 
+                              cols = Taxonomy, 
+                              delim = ";", names = c(
+                                "Kingdom", "Phylum", 
+                                "Class", "Order", 
+                                "Family", "Genus" 
+                                )
+                              )
+tmp_tax <- data.frame(sapply(tmp_tax, gsub, 
+                           pattern = "^.*_unclassified$", 
+                           replacement = ""))
+tmp_tax$Size <- NULL
+tmp_tax <- tibble::column_to_rownames(tmp_tax, "OTU")
+```
+
+And we get this ...
+
+```{r}
+#| echo: false
+#| eval: true
+#tax2 <- tmp_tax
+pandoc.table(tax2[11:13, 1:3], emphasize.rownames = FALSE, split.tables = Inf)
+```
+
+```{r}
+#| echo: true
+#| eval: false
+rank_prefixes <- c(
+  Kingdom = "k", 
+  Phylum  = "p", 
+  Class   = "c", 
+  Order   = "o", 
+  Family  = "f", 
+  Genus   = "g"
+)
+
+tmp_tax <- tmp_tax %>%
+  mutate(across(everything(), ~replace_na(., ""))) %>% 
+  mutate(across(names(rank_prefixes), 
+                ~ paste0(rank_prefixes[cur_column()], "__", .))) %>%
+tidy_taxonomy()
+```
+
+And then this. Excatly like the mock data. 
+
+```{r}
+#| echo: false
+#| eval: true
+#tax3 <- tmp_tax
+pandoc.table(tax3[11:13, 1:3], emphasize.rownames = FALSE, split.tables = Inf)
+```
+
+### B. Sequence Table
+
+Here is what the sequence table looks like in the mock data.
+
+Here is what the sequence table looks like in the mock data.
+
+```{r}
+#| eval: true
+#| echo: false
+pandoc.table(otu_table_16S[1:3, 1:11], emphasize.rownames = FALSE)
+```
+
+These code block will return a properly formatted sequence table. 
+
+```{r}
+#| echo: true
+#| eval: false
+tmp_st <- readr::read_delim(
+  here(work_here, "final.opti_mcc.shared"),  delim = "\t")
+```
+
+```{r}
+#| echo: true
+#| eval: false
+tmp_st$numOtus <- NULL
+tmp_st$label <- NULL
+tmp_st <- tmp_st %>%
+  tidyr::pivot_longer(cols = c(-1), names_to = "tmp") %>%
+  tidyr::pivot_wider(names_from = c(1))
+
+tmp_st <- tibble::column_to_rownames(tmp_st, "tmp")
+```
+
+```{r}
+#| eval: true
+#| echo: false
+# st <- tmp_st
+pandoc.table(st[1:5, 1:3], emphasize.rownames = FALSE)
+```
+
+```{zsh}
+# only need to run this if reading in processed files
+# code adds a tab to the beginning of first line
+sed '1s/^/\t/' tmp_final.opti_mcc.fixed.shared > final.opti_mcc.fixed.shared
+```
+
+### C. Sample Table
+
+```{r}
+#| eval: true
+#| echo: false
+pandoc.table(sample_info_16S[1:3, 1:4], emphasize.rownames = FALSE, split.tables = Inf)
+```
+
+No problem. 
+
+```{r}
+#| echo: true
+#| eval: false
+samdf <- readRDS(here("working_files/ssu/sampledata", "sample_data.rds"))
+
+samdf <- samdf %>% tibble::column_to_rownames("SampleID")
+samdf$SampleID <- rownames(samdf)
+samdf <- samdf %>% dplyr::relocate(SampleID)
+
+samdf <- samdf %>%
+  dplyr::filter(
+    stringr::str_starts(SampleID, "Control", negate = TRUE)
+    )
+```
+
+```{r}
+#| eval: true
+#| echo: false
+pandoc.table(samdf[1:3, 1:4], emphasize.rownames = FALSE, split.tables = Inf)
+```
+
+## Experiment-level Objects
+
+In the following section we create `microtable` and `phyloseq` objects. These are single, consolidated experiment-level data objects that organize various data types, such as OTU tables (taxa abundance), sample metadata, taxonomic classifications, as well as phylogenetic trees and reference sequences, into one structured format. This unified approach facilitates reproducible, interactive analysis and visualization by bringing all related information together. 
+
+We begin by creating the `microtable` and then use the function `meco2phyloseq` from the [file2meco](https://github.com/ChiLiubio/file2meco) package to create the `phyloseq` object. This way all of the underlying data is identical across the two objects. 
+
+::: callout-note
+These objects contain an OTU table (taxa abundances), sample metadata, and taxonomy table (mapping between OTUs and higher-level taxonomic classifications).
+:::
+
+```{r}
+#| echo: true
+#| eval: false
+sample_info <- samdf
+tax_tab <- tmp_tax
+otu_tab <- tmp_st
+```
+
+```{r}
+#| echo: true
+#| eval: false
+tmp_me <- microtable$new(sample_table = sample_info, 
+                         otu_table = otu_tab, 
+                         tax_table = tax_tab)
+tmp_me
+```
+
+```         
+microtable-class object:
+sample_table have 1849 rows and 13 columns
+otu_table have 119453 rows and 1849 columns
+tax_table have 119453 rows and 6 columns
+```
+
+### D. Add Representative Sequence
+
+We can also add representative sequences for each OTU/ASV. For this step, we use the mothur command `get.oturep`. 
+
+```{verbatim}
+get.oturep(column=final.dist, list=final.opti_mcc.list, count=final.count_table, fasta=final.fasta)
+```
+
+The fasta file it returns needs a little T.L.C.
+
+```
+You did not provide a label, using 0.03.
+0.03	119453
+
+Output File Names: 
+final.opti_mcc.0.03.rep.count_table
+final.opti_mcc.0.03.rep.fasta
+```
+
+For that we use a tool called SeqKit [@shen2024seqkit2] for fasta defline manipulation.
+
+```{zsh}
+seqkit replace -p "\|.*" -r '' final.opti_mcc.0.03.rep.fasta > tmp2.fa
+seqkit replace -p ".*\\t" -r '' tmp2.fa > tmp3.fa
+seqkit replace -p "-" -r '$1' -s -w 0 tmp3.fa > otu_reps.fasta
+rm tmp*
+```
+
+```{r}
+#| echo: true
+#| eval: false
+rep_fasta <- Biostrings::readDNAStringSet(here(work_here, "otu_reps.fasta"))
+tmp_me$rep_fasta <- rep_fasta
+tmp_me$tidy_dataset()
+tmp_me
+```
+
+```
+microtable-class object:
+sample_table have 1849 rows and 14 columns
+otu_table have 119453 rows and 1849 columns
+tax_table have 119453 rows and 6 columns
+rep_fasta have 119453 sequence
+```
+
+```{r}
+#| echo: false
+#| eval: false
+me_raw <- microeco::clone(tmp_me)
+```
+
+## Curate the Data Set
+
+Pretty much the last thing to do is remove  low-count samples.
+
+### Remove Low-Count Samples
+
+```{r}
+#| echo: true
+#| eval: false
+threshold <- 1000
+tmp_no_low <- microeco::clone(me_raw)
+tmp_no_low$otu_table <- me_raw$otu_table %>%
+          dplyr::select(where(~ is.numeric(.) && sum(.) >= threshold))
+tmp_no_low$tidy_dataset()
+tmp_no_low
+```
+
+```         
+41 taxa with 0 abundance are removed from the otu_table ...
+```
+
+```{r}
+#| echo: false
+#| eval: false
+me_no_low <- microeco::clone(tmp_no_low)
+```
+
+```{r}
+#| echo: false
+#| eval: true
+me_no_low
+```
+
+```{r}
+#| echo: true
+#| eval: false
+me_final <- microeco::clone(tmp_no_low)
+```
+
+Lastly, we can use the package [`file2meco`](https://github.com/ChiLiubio/file2meco) to generate a [phyloseq](https://joey711.github.io/phyloseq/) object. 
+
+```{r}
+#| echo: true
+#| eval: false
+ps_final <- file2meco::meco2phyloseq(me_final)
+```
+
+## Summary
+
+Now time to summarize the data. For this we use the R package [miaverse](https://microbiome.github.io) [@felix2024mia].
+
+```{r}
+#| echo: false
+#| eval: false
+identical(rownames(me_raw$sample_table), colnames(me_raw$otu_table))
+identical(rownames(me_final$sample_table), colnames(me_final$otu_table))
+```
+
+```{r}
+#| echo: false
+#| eval: false
+objs <- c("me_raw", "me_final")
+pipe_summary <- summarize_objs(objs)
+pipe_summary$me_dataset <- c(
+  "original", "final")
+print(pipe_summary)
+```
+
+```{r}
+#| echo: false
+#| eval: true
+knitr::kable(pipe_summary)
+```
+
+```{r}
+#| echo: false
+#| eval: false
+tmp_raw_ps <- file2meco::meco2phyloseq(me_raw)
+tmp_final_ps <- file2meco::meco2phyloseq(me_final)
+tmp_mia_raw <- mia_metrics(tmp_raw_ps)
+tmp_mia_final <- mia_metrics(tmp_final_ps)
+
+tmp_metrics_final <- rbind(tmp_mia_raw, tmp_mia_final)
+rownames(tmp_metrics_final) <- c("Start", "End")
+
+# suppose ds_metrics_final has rownames "Start" and "End"
+ds_metrics_tbl <- tmp_metrics_final %>%
+  t() %>%                         # transpose: metrics in rows
+  as.data.frame() %>%
+  tibble::rownames_to_column("Metric") %>%
+  dplyr::rename(Start = Start, End = End)
+
+ds_metrics_tbl <- ds_metrics_tbl %>%
+  mutate(
+    Start = ifelse(Start %% 1 == 0,
+                   formatC(Start, format = "f", digits = 0),
+                   formatC(Start, format = "f", digits = 3)),
+    End   = ifelse(End %% 1 == 0,
+                   formatC(End, format = "f", digits = 0),
+                   formatC(End, format = "f", digits = 3))
+  )
+
+ds_metrics_tbl$Metric <- c(
+  "Min. no. of reads",
+  "Max. no. of reads",
+  "Total no. of reads",
+  "Avg. no. of reads",
+  "Median no. of reads",
+  "Total ASVs",
+  "No. of singleton ASVs",
+  "% of singleton ASVs",
+  "Sparsity"
+)
+```
+
+```{r}
+#| echo: false
+#| eval: true
+#| tbl-cap: "Dataset metrics before and after curation."
+knitr::kable(ds_metrics_tbl, format = "markdown")
+```
+
+We started off with `r nrow(me_raw$tax_table)` ASVs and `r nrow(me_raw$sample_table)` samples. After removing low-count samples, there were `r nrow(me_final$tax_table)` ASVs and `r nrow(me_final$sample_table)` samples remaining.
+
+```{r}
+#| echo: false
+#| eval: false
+# helper functions
+make_tables <- function(obj, prefix) {
+  rc <- obj$sample_sums() %>%
+    as.data.frame() %>%
+    tibble::rownames_to_column("SampleID") %>%
+    dplyr::rename(!!paste0(prefix, "_rc") := 2)
+
+  asv <- obj$otu_table %>%
+    t() %>%
+    as.data.frame() %>%
+    { rowSums(. > 0) } %>%
+    as.data.frame() %>%
+    tibble::rownames_to_column("SampleID") %>%
+    dplyr::rename(!!paste0(prefix, "_otu") := 2)
+
+  list(rc = rc, asv = asv)
+}
+```
+
+```{r}
+#| echo: false
+#| eval: false
+#tmp_start <- microeco::clone(me_raw)
+#tmp_final <- microeco::clone(me_final)
+# --- input rc file ---
+tmp_rc <- readr::read_delim(here(work_here, "mothur_pipeline_read_changes.txt")) 
+
+# --- generate tables ---
+start_tbls <- make_tables(microeco::clone(me_raw), "start")
+final_tbls <- make_tables(microeco::clone(me_final), "final")
+
+# --- summary ---
+curate_summary <- tmp_rc %>%
+  dplyr::full_join(start_tbls$rc,  by = "SampleID") %>%
+  dplyr::left_join(start_tbls$asv, by = "SampleID") %>%
+  dplyr::left_join(final_tbls$rc,  by = "SampleID") %>%
+  dplyr::left_join(final_tbls$asv, by = "SampleID")
+
+removed_samples <- curate_summary %>%
+  dplyr::filter(is.na(final_rc)) %>%
+  dplyr::pull(SampleID)
+```
+
+We lost a total of `r length(removed_samples)` samples after curating the dataset. This includes `r length(removed_samples[grepl("^Control_", removed_samples)])` NC samples and `r length(removed_samples[!grepl("^Control_", removed_samples)])` non-NC samples.
+
+Here is a list of non-NC samples that were removed. 
+
+```{r}
+#| message: false
+#| echo: false
+#| eval: true
+removed_samples[!grepl("^Control_", removed_samples)]
+```
+
+# Download Results {#download-results}
+
+Quick access to read changes through the pipeline and repseqs detected in negative control samples.
+
+::: {#otu-listing .column-body}
+:::
+
+<!------------------------------------------------------------------------>
+<!-------------------- Use this area to save things ---------------------->
+<!------------------------------------------------------------------------>
+
+<!--------------------------------------->
+<!-- These chunks are for curated data -->
+<!--------------------------------------->
+```{r}
+#| echo: false
+#| eval: false
+workflow_name <- "otu"
+dir.create(here(share_here, paste0(workflow_name, "_curated_data")), 
+           recursive = FALSE, showWarnings = TRUE)
+```
+
+```{r}
+#| echo: false
+#| eval: false
+tmp_path <- here(share_here, paste0(workflow_name, "_curated_data/"))
+
+files <- list(
+  otu = paste0(workflow_name, "_otu_table.txt"),
+  tax = paste0(workflow_name, "_tax_table.txt"),
+  sample = paste0(workflow_name, "_sample_table.txt"),
+  rep = paste0(workflow_name, "_rep.fasta"),
+  me = paste0("me_", workflow_name, ".rds"),
+  ps = paste0("ps_", workflow_name, ".rds"),
+  counts = paste0(workflow_name, "_track_read_counts.txt")
+)
+```
+
+```{r}
+#| echo: false
+#| eval: false
+#---------------OTU Table--------------#
+tmp_otu <- me_final$otu_table %>% 
+  tibble::rownames_to_column(paste0(toupper(workflow_name), "_ID"))
+write_delim(tmp_otu, paste0(tmp_path, files$otu), delim = "\t")
+#---------------TAX Table--------------#
+tmp_tax <- me_final$tax_table %>% 
+  tibble::rownames_to_column(paste0(toupper(workflow_name), "_ID"))
+write_delim(tmp_tax, paste0(tmp_path, files$tax), delim = "\t")
+#---------------SAMP Table--------------#
+write_delim(me_final$sample_table, paste0(tmp_path, files$sample), delim = "\t")
+#---------------REP FASTA--------------#
+write.fasta(
+  sequences = as.list(as.character(me_final$rep_fasta)),
+  names = names(me_final$rep_fasta),
+  file.out = paste0(tmp_path, files$rep)
+)
+#---------------        --------------#
+saveRDS(me_final, paste0(tmp_path, files$me))
+ps_final <- file2meco::meco2phyloseq(me_final)
+saveRDS(ps_final, paste0(tmp_path, files$ps))
+#---------------read count changes--------------#
+write_delim(curate_summary, paste0(tmp_path, files$counts), delim = "\t")
+file.copy(here("working_files/ssu/sampledata",  "all_metadata.txt"), 
+          tmp_path, 
+          overwrite = TRUE, recursive = FALSE, 
+          copy.mode = TRUE, copy.date = FALSE)
+```
+
+```{r}
+#| echo: false
+#| eval: false
+zip::zip(zipfile = here(share_here, paste0(workflow_name, "_curated_data.zip")), 
+         files = here(share_here, paste0(workflow_name,"_curated_data")), 
+         mode = "cherry-pick")
+```
+
+
+```{r}
+#| echo: false
+#| eval: false
+file.copy(here(work_here,  "mothur_pipeline_read_changes.txt"), 
+          here(share_here), 
+          overwrite = TRUE, recursive = FALSE, 
+          copy.mode = TRUE, copy.date = FALSE)
+```
+
+<!-------------------------------------------->
+<!-- These chunks are for  processing data  -->
+<!-------------------------------------------->
+
+```{r}
+#| echo: false
+#| eval: false
+dir.create(here(share_here, paste0(workflow_name, "_processing")), 
+           recursive = FALSE, showWarnings = TRUE)
+copy_here <- here(share_here, paste0(workflow_name, "_processing/"))
+```
+
+```{r}
+#| echo: false
+#| eval: false
+#| comment: from sampledata (these data are common to all 16S wf)
+tmp_sampdata_path <- "working_files/ssu/sampledata"
+fs::dir_copy(path = here(tmp_sampdata_path,  "fastq_rename_results/"), 
+             new_path = here(copy_here,  "fastq_rename_results/"), 
+             overwrite = TRUE)
+
+fs::dir_copy(path = here(tmp_sampdata_path,  "fastq_rename_lookup/"), 
+             new_path = here(copy_here,  "fastq_rename_lookup/"), 
+             overwrite = TRUE)
+file.copy(here(tmp_sampdata_path,  "rename.sh"), 
+          here(copy_here), 
+          overwrite = TRUE, recursive = FALSE, 
+          copy.mode = TRUE, copy.date = FALSE)
+```
+
+
+```{r}
+#| echo: false
+#| eval: false
+fs::dir_copy(path = here(work_here,  paste0(workflow_name, "_hydra_scripts/")), 
+             new_path = here(copy_here,  paste0(workflow_name, "_hydra_scripts/")), 
+             overwrite = TRUE)
+
+file.copy(here(work_here,  paste0(workflow_name, "_batchfile_processing/")), 
+          copy_here, 
+          overwrite = TRUE, recursive = FALSE, 
+          copy.mode = TRUE, copy.date = FALSE)
+
+file.copy(here(share_here,  "mothur_pipeline_read_changes.txt"), 
+          here(copy_here), 
+          overwrite = TRUE, recursive = FALSE, 
+          copy.mode = TRUE, copy.date = FALSE)
+
+file.copy(here(tmp_sampdata_path,  "all_metadata.txt"), 
+          here(copy_here), 
+          overwrite = TRUE, recursive = FALSE, 
+          copy.mode = TRUE, copy.date = FALSE)
+```
+
+```{r}
+#| echo: false
+#| eval: false
+zip::zip(zipfile = here(share_here, paste0(workflow_name, "_processing.zip")), 
+         files = here(share_here, paste0(workflow_name,"_processing")), 
+         mode = "cherry-pick")
+dir_delete(here(share_here, paste0(workflow_name,"_processing")))
+```
+
+```{r}
+#| echo: false
+#| eval: true
+#| message: false
+#| include: false
+#| comment: save R script
+workflow_name <- "otu"
+options(knitr.duplicate.label = "allow")
+# Define sources and numbered outputs
+sources <- c(
+  "include/_OTU_Part1.qmd",
+  "index.qmd"
+)
+# Generate corresponding temporary output files
+tmp_outputs <- here("share/ssu", paste0(workflow_name, "_workflow", seq_along(sources), ".R"))
+# Final combined output
+final_output <- here(share_here, paste0(workflow_name, "_workflow.R"))
+# Step 1: Extract code from qmd to temporary R scripts
+purrr::walk2(sources, tmp_outputs, ~
+  knitr::purl(.x, output = .y, documentation = 0)
+)
+# Step 2: Concatenate all temporary R scripts into one, with separators
+sink(final_output)
+purrr::walk2(tmp_outputs, seq_along(tmp_outputs), ~{
+  cat(readLines(.x), sep = "\n")
+  cat("\n\n",
+      paste0("# -------------------- END OF SCRIPT ", .y, " --------------------\n\n"),
+      sep = "")
+})
+sink()
+# Step 3: Clean up temporary files
+file.remove(tmp_outputs)
+```
+
+```{r}
+#| echo: false
+#| eval: false
+objects()
+gdata::keep(me_final, me_no_low, me_raw, curate_summary, 
+            ds_metrics_tbl, pipe_summary, removed_samples, 
+            samdf, st, tax1, tax2, tax3,
+            sure = TRUE)
+save.image(here("page_build", "otu_part2.rdata"))
+```
+
+#### References {.appendix}
+
+::: {#refs}
+:::
+
+{{< include /include/_footer.qmd >}}
+

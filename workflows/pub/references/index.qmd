@@ -1,0 +1,51 @@
+---
+title: "Workflow References"
+description: |
+  Access to references for metagenomic and 16S RNA  processing. 
+listing: 
+  page-size: 16
+  id: references-listings
+  contents: references.yaml
+  type: table
+  sort-ui: [name, workflow, type]
+  fields: [name, version, workflow, type, reference]
+  field-links: 
+    - name
+  field-display-names: 
+    name: Name
+    version: Version
+    workflow: Workflow
+    type: Type
+    reference: Reference
+format:
+  html:
+    anchor-sections: false
+    code-fold: false
+    toc: true
+    toc-depth: 0
+    #page-layout: full  
+title-block-banner: false
+bread-crumbs: false
+page-navigation: false
+---
+
+<br/>
+
+::: {#references-listings .column-body-outset-right}
+:::
+
+
+::: {.column-body-outset-right}
+
+### References
+
+{{< dstart summary="Expand to see the formatted references" >}}
+
+::: {#refs}
+:::
+
+{{< dstop >}}
+
+:::
+
+{{< include /include/_footer.qmd >}}

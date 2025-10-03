@@ -1,0 +1,19 @@
+listing: 
+  type: table
+  sort-ui: false
+  filter-ui: false
+  fields: 
+    - name
+    - filename
+    - description
+  field-links: 
+    - filename
+  field-display-names: 
+    name: Asset
+    filename: File Name
+    description: Description
+format:
+  html:
+    anchor-sections: true
+    toc: true
+    toc-depth: 0

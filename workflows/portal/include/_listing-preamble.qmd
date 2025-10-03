@@ -1,0 +1,20 @@
+::: column-body-outset-right
+{{< include /include/_setup.qmd >}}
+
+Quick access to fastq sequence files, processing scripts, and curated datasets. If you want to process the data yourself, select a pipeline, download the sequence data and processing scripts, and run the workflow.  
+
+:::
+
+{{< include include/_listing-chooser.qmd >}}
+
+<br/>
+
+## Data & Scripts {.unlisted}
+
+::: {.callout-note icon=false}
+
+## A note about curated data
+
+Curated means that after processing, the data has been cleaned of unwanted taxa (e.g., NA kingdoms, potential contaminants, etc). Negative control & low-count samples have also been removed. These data are ready for downstream analysis.
+:::
+

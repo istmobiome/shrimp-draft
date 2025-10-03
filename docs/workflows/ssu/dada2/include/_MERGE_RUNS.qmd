@@ -1,0 +1,363 @@
+```{r}
+#| echo: false
+#| eval: false
+#| comment: "for interactive testing"
+project_root <- quarto::find_project_root()
+# Construct the full path to your functions script
+sampdata_path <- file.path(project_root, "working_files/ssu/dada2")
+```
+
+We start by reading in each sequence table.
+
+::: callout-note
+Click here to access the source code for the [Merge Runs](include/_MERGE_RUNS.qmd) section of the workflow.
+:::
+
+| Step | Command                 | What we’re doing                  |
+|------|-------------------------|-----------------------------------|
+| 10   | `mergeSequenceTables()` | merge seqtabs from all runs.      |
+| 11   | `removeBimeraDenovo()`  | screen for & remove chimeras      |
+| 12   |                         | track reads through workflow      |
+| 13   | `assignTaxonomy()`      | assign taxonomy & finish workflow |
+
+{{< include include/_dada2_flowchart_2.qmd >}}
+
+```{r}
+#| echo: true
+#| eval: false
+BCS_26 <- readRDS("`BCS_26.rds")
+BCS_28 <- readRDS("`BCS_28.rds")
+BCS_29 <- readRDS("`BCS_29.rds")
+BCS_30 <- readRDS("`BCS_30.rds")
+BCS_34 <- readRDS("`BCS_34.rds")
+BCS_35 <- readRDS("`BCS_35.rds")
+```
+
+### 1. Merge Sequencing Tables
+
+```{r}
+#| echo: true
+#| eval: false
+seqtab.merge <- mergeSequenceTables(BCS_26, BCS_28, BCS_29, 
+                                    BCS_30, BCS_34, BCS_35)
+dim(seqtab.merge)
+```
+
+```{r}
+#| echo: false
+#| eval: true
+seqtabZ <- c(1909, 96680)
+seqtabZ
+```
+
+So our count is `r seqtabZ[2]` ASVs across `r seqtabZ[1]` samples.
+
+```{r}
+#| echo: true
+#| eval: false
+table(nchar(getSequences(seqtab.merge)))
+```
+
+```         
+  220   221   222   223   224   225   226   227   228   229   230   231   232 
+  124    67    14    36    20    13    10    25     8     6     4    30     2 
+  234   235   236   237   238   239   240   241   242   243   244   245   246 
+    9     8  1371   151    41     6    96   401   291   443    31    14    13 
+  247   248   249   250   251   252   253   254   255   256   257   258   259 
+   26    23    19    48   159  3606 83887  3756   315   121    95    20    10 
+  260   261   262   263   264   265   266   267   268   269   270   271   272 
+    8    16     9     4     2     1     1     1     4     2     9     8     4 
+  273   274   275   276   277   278   279   280   281   282   284   285   286 
+    7     3     2     5     1     7     4     1     1     2     1     4     4 
+  288   289   290   291   292   293   294   295   296   297   298   300   303 
+    1     3     1     2     4     8     7     2     3     2     2     2     3 
+  304   305   307   308   309   310   311   312   313   315   316   317   318 
+    1     5     2     3     2     1     3     1     3     1     4     1     3 
+  319   320   321   322   323   324   325   326   328   329   330   332   333 
+    3     1     2     3     2     1     3     1     3     3     2     1     3 
+  334   335   336   337   338   339   340   341   342   343   344   345   346 
+   13     6     7    17     5    25    16    70    51     8     7     8     4 
+  347   348   349   350   351   352   353   354   355   356   357   358   359 
+   28    17    21    10     2    11     1     1     7     6    31     6    15 
+  360   361   362   363   364   365   366   367   368   369   370   371   372 
+   21   161   186    43   135   107    19     9    26     5     3     3     8 
+  373   374   376   377   378   379   380   384   385   386   387   388 
+   11     2     3     5     2     3     1     1     1     1     2     1 
+```
+
+```{r}
+#| echo: true
+#| eval: false
+read_length_all <-  data.frame(nchar(getSequences(seqtab.merge)))
+colnames(read_length_all) <- "length"
+plot_all <- qplot(length, data = read_length_all, geom = "histogram", 
+                  binwidth = 1, xlab = "read length", 
+                  ylab = "total variants", xlim = c(200,400)) 
+```
+
+```{r}
+#| echo: false
+#| eval: false
+ggsave("read_length_before_collapse.png", plot_all, width = 7, height = 3)
+```
+
+```{r}
+#| eval: false
+#| echo: false
+file.copy(from = paste0(sampdata_path, "/figures/read_length_before_collapse.png"), to = "figures/")
+```
+
+```{r}
+#| echo: false
+#| eval: true
+#| fig-cap: "Distribution of read length by total ASVs after merging & before removing extreme length variants."
+knitr::include_graphics("include/figures/read_length_before_collapse.png")
+```
+
+Then we remove length variants.
+
+```{r}
+#| echo: true
+#| eval: false
+seqtab.trim <- seqtab.merge[,nchar(colnames(seqtab.merge)) %in% 
+                              seq(252, 254)]
+dim(seqtab.trim)
+```
+
+```{r}
+#| echo: false
+#| eval: true
+seqtabY <- c(1909, 91249)
+seqtabY
+```
+
+And now our count is `r seqtabY[2]` ASVs across `r seqtabY[1]` samples.
+
+```{r}
+#| echo: true
+#| eval: false
+table(nchar(getSequences(seqtab.trim)))
+```
+
+```         
+ 252   253   254 
+ 3606 83887  3756 
+```
+
+### 2. Remove Chimeras
+
+Even though the `dada` method corrects substitution and indel errors, chimeric sequences remain. According to the DADA2 documentation, the accuracy of sequence variants after denoising makes identifying chimeric ASVs simpler than when dealing with fuzzy OTUs. Chimeric sequences are identified if they can be exactly reconstructed by combining a left-segment and a right-segment from two more abundant parent sequences.
+
+```{r}
+#| echo: true
+#| eval: false
+seqtab.trim.nochim.consensus <- 
+  removeBimeraDenovo(seqtab.trim, 
+                     method = "consensus", 
+                     multithread = 20,  
+                     verbose = TRUE)
+dim(seqtab.trim.nochim.consensus)
+```
+
+```         
+Identified 18398 bimeras out of 91249 input sequences.
+```
+
+```{r}
+#| echo: false
+#| eval: true
+seqtab3 <- c(1909, 72851)
+seqtab3
+```
+
+```{r}
+#| echo: true
+#| eval: false
+sum(seqtab.nochim)/sum(seqtab.2)
+```
+
+```         
+[1] 0.9669996
+```
+
+```{r}
+#| echo: false
+#| eval: true
+chim_rem <- 0.9669996
+```
+
+Chimera checking removed an additional `r (seqtabY)[2] - (seqtab3)[2]` sequence variants however, when we account for the abundances of each variant, we see chimeras accounts for about `r 100*(1-chim_rem)`% of the merged sequence reads. Not bad.
+
+### 3. Track Reads through Workflow
+
+At this point we can look at the number of reads that made it through each step of the workflow for every sample.
+
+```{r}
+#| echo: true
+#| eval: false
+getN <- function(x) sum(getUniques(x))
+track <- cbind(rowSums(seqtab), 
+               rowSums(seqtab.trim), 
+               rowSums(seqtab.trim.nochim.pool), 
+               rowSums(seqtab.trim.nochim.consensus))
+
+colnames(track) <- c("merged", "trim", 
+                     "chimera_pool", 
+                     "chimera_concensus")
+```
+
+```{r}
+#| echo: false
+#| eval: false
+tmp_listfile <- list.files(path = here(work_here, "tables"),
+                           pattern = "_read_changes.txt", 
+                           full.names = TRUE, recursive = FALSE)
+
+read_file <- function(filename) {
+  dat <- read.table(filename, header = TRUE, sep = "\t")
+  names(dat)[1] <- "SampleID"
+  return(dat)
+}
+tmp_dat <- do.call(rbind, lapply(tmp_listfile, read_file))
+tmp_tab <- read.table(here(work_here, "tables/3.chimera_read_changes_pipeline.txt"),
+                       header = TRUE, sep = "\t")
+names(tmp_tab)[1] <- "SampleID"
+
+tmp_full_tab <- dplyr::left_join(tmp_dat, tmp_tab, 
+                                 by = c("SampleID" = "SampleID", 
+                                        "merged" = "merged"))
+tmp_full_tab[8] <- NULL
+names(tmp_full_tab)[8] <- "nochim"
+write_delim(tmp_full_tab, 
+            here(work_here, "dada2_read_changes/all_sample_dada2_read_changes.txt"), 
+            delim = "\t")
+```
+
+### 4. Assign Taxonomy
+
+The `assignTaxonomy` command implements the naive Bayesian classifier, so for reproducible results you need to set a random number seed (see issue [#538](https://github.com/benjjneb/dada2/issues/538)). We did this at the beginning of the workflow. For taxonomic assignment, we are using the GSR database [@molano2024gsr]. The developers of DADA2 maintain [formatted versions of popular databases](https://benjjneb.github.io/dada2/training.html), however the GSR-DB has not been formatted by the developers yet.
+
+::: callout-note
+Click the link to can download an appropriate version of the  [GSR database](https://manichanh.vhir.org/gsrdb/download_db_links2.php).
+:::
+
+To create a DADA2 formatted version GSR-DB[^_merge_runs-1], we perform the following steps.
+
+[^_merge_runs-1]: From the developers: GSR database (Greengenes, SILVA, and RDP database) is an integrated and manually curated database for bacterial and archaeal 16S amplicon taxonomy analysis. Unlike previous integration approaches, this database creation pipeline includes a taxonomy unification step to ensure consistency in taxonomical annotations. The database was validated with three mock communities and two real datasets and compared with existing 16S databases such as Greengenes, GTDB, ITGDB, SILVA, RDP, and MetaSquare. Results showed that the GSR database enhances taxonomical annotations of 16S sequences, outperforming current 16S databases at the species level. The GSR database is available for full-length 16S sequences and the most commonly used hypervariable regions: V4, V1-V3, V3-V4, and V3-V5.
+
+#### Download a data base
+
+Here we are using the [GSR V4 database](https://manichanh.vhir.org/gsrdb/GSR-DB_V4_cluster-1.tar.gz). 
+
+```{zsh}
+#| echo: true
+#| eval: false
+wget https://manichanh.vhir.org/gsrdb/GSR-DB_V4_cluster-1.tar.gz
+tar -xvzf GSR-DB_V4_cluster-1.tar.gz
+```
+
+Once you uncompress the `tar` file you should see four files, two `.qza` files (which you can ignore), a `_taxa.txt` file and a `_seqs.fasta` file. We are interested in the latter two files. These are the files we need to format for DADA2. How about we have a look at each file?
+
+First the taxonomy file. 
+
+```{zsh}
+head GSR-DB_V4_cluster-1_taxa.txt
+```
+
+```         
+Feature ID  Taxon
+AY999846    k__Bacteria; p__Actinobacteria; c__Actinomycetia; o__Actinomycetales-Streptomycetales-Unknown; f__Streptomycetaceae-Unknown; g__Streptomyces-Unknown; s__Unknown
+JN885187.1.1362 k__Bacteria; p__Actinobacteria; c__Actinomycetia; o__Actinomycetales-Streptomycetales-Unknown; f__Streptomycetaceae-Unknown; g__Kitasatospora-Streptomyces-Unknown; s__Unknown
+```
+
+And next the fasta file. 
+
+```{zsh}
+head GSR-DB_V4_cluster-1_seqs.fasta
+```
+
+```         
+>AY999846
+TACGTAGGGCGCAAGCGTTGTCCGGAATTATTGGGCGTAAAGAGCTCGTAGGCGGCTTGT
+CACGTCGGTTGTGAAAGCCCGGGGCTTAACCCCGGGTCTGCAGTCGATACGGGCAGGCTA
+GAGTTCGGTAGGGGAGATCGGAATTCCTGGTGTAGCGGTGAAATGCGCAGATATCAGGAG
+GAACACCGGTGGCGAAGGCGGATCTCTGGGCCGATACTGACGCTGAGGAGCGAAAGCGTG
+GGGAGCGAACAGG
+>JN885187.1.1362
+TACGTAGGGCGCGAGCGTTGTCCGGAATTATTGGGCGTAAAGAGCTCGTAGGCGGCTTGT
+CACGTCGGTTGTGAAAGCCCGGGGCTTAACCCCGGGTCTGCAGTCGATACGGGCAGGCTA
+GAGTTCGGTAGGGGAGATCGGAATTCCTGGTGTAGCGGTGAAATGCGCAGATATCAGGAG
+```
+
+DADA2 requires a very specific format for classification. For the next few step we use a tool called SeqKit [@shen2024seqkit2] for fasta defline manipulation.  
+
+This first step replaces the original fasta defline with the correspoding lineage information. 
+
+```{zsh}
+conda activate seqkit
+seqkit replace -w 0  -p "(.+)" -r '{kv}' -k GSR-DB_V4_cluster-1_taxa.txt GSR-DB_V4_cluster-1_seqs.fasta > tmp_1.fa
+```
+
+```         
+[INFO] read key-value file: GSR-DB_V4_cluster-1_taxa.txt
+[INFO] 38802 pairs of key-value loaded
+```
+
+Here is what the first few entries look like. 
+
+```
+>k__Bacteria; p__Actinobacteria; c__Actinomycetia; o__Actinomycetales-Streptomycetales-Unknown; f__Streptomycetaceae-Unknown; g__Streptomyces-Unknown; s__Unknown
+TACGTAGGGCGCAAGCGTTGTCCGGAATTATTGGGCGTAAAGAGCTCGTAGGCGGCTTGTCACGTCGGTTGTGAAAGCCCGGGGCTTAACCCCGGGTCTGCAGTCGATACGGGCAGGCTAGAGTTCGGTAGGGGAGATCGGAATTCCTGGTGTAGCGGTGAAATGCGCAGATATCAGGAGGAACACCGGTGGCGAAGGCGGATCTCTGGGCCGATACTGACGCTGAGGAGCGAAAGCGTGGGGAGCGAACAGG
+>k__Bacteria; p__Actinobacteria; c__Actinomycetia; o__Actinomycetales-Streptomycetales-Unknown; f__Streptomycetaceae-Unknown; g__Kitasatospora-Streptomyces-Unknown; s__Unknown
+TACGTAGGGCGCGAGCGTTGTCCGGAATTATTGGGCGTAAAGAGCTCGTAGGCGGCTTGTCACGTCGGTTGTGAAAGCCCGGGGCTTAACCCCGGGTCTGCAGTCGATACGGGCAGGCTAGAGTTCGGTAGGGGAGATCGGAATTCCTGGTGTAGCGGTGAAATGCGCAGATATCAGGAGGAACACCGGTGGCGAAGGCGGATCTCTGGGCCGATACTGACGCTGAGGAGCGAAAGCGTGGGGAGCGAACAGGATTAGATACCCTGGTAGTCCACGCCGTAAACGGTGGGCACTAGGTGTAGG
+```
+
+Next we tidy up the deflines to remove spaces and leading taxonomic rank designations. 
+
+```{zsh}
+seqkit replace -w 0  -p " s__.*" -r ''  tmp_1.fa > tmp_2.fa
+seqkit replace -w 0  -p "\s" -r ''  tmp_2.fa > tmp_3.fa
+seqkit replace -w 0  -p "\w__" -r ''  tmp_3.fa > gsrdb_dada2.fa
+rm tmp_*
+```
+
+And here are the first few lines of the final formatted GSR-DB fasta file. 
+
+```         
+>Bacteria;Actinobacteria;Actinomycetia;Actinomycetales-Streptomycetales-Unknown;Streptomycetaceae-Unknown;Streptomyces-Unknown;
+TACGTAGGGCGCAAGCGTTGTCCGGAATTATTGGGCGTAAAGAGCTCGTAGGCGGCTTGTCACGTCGGTTGTGAAAGCCCGGGGCTTAACCCCGGGTCTGCAGTCGATACGGGCAGGCTAGAGTTCGGTAGGGGAGATCGGAATTCCTGGTGTAGCGGTGAAATGCGCAGATATCAGGAGGAACACCGGTGGCGAAGGCGGATCTCTGGGCCGATACTGACGCTGAGGAGCGAAAGCGTGGGGAGCGAACAGG
+>Bacteria;Actinobacteria;Actinomycetia;Actinomycetales-Streptomycetales-Unknown;Streptomycetaceae-Unknown;Kitasatospora-Streptomyces-Unknown;
+TACGTAGGGCGCGAGCGTTGTCCGGAATTATTGGGCGTAAAGAGCTCGTAGGCGGCTTGTCACGTCGGTTGTGAAAGCCCGGGGCTTAACCCCGGGTCTGCAGTCGATACGGGCAGGCTAGAGTTCGGTAGGGGAGATCGGAATTCCTGGTGTAGCGGTGAAATGCGCAGATATCAGGAGGAACACCGGTGGCGAAGGCGGATCTCTGGGCCGATACTGACGCTGAGGAGCGAAAGCGTGGGGAGCGAACAGGATTAGATACCCTGGTAGTCCACGCCGTAAACGGTGGGCACTAGGTGTAGG
+```
+
+Now we can run the classification step. 
+
+```{r}
+#| echo: true
+#| eval: false
+seqtab.consensus <- seqtab.trim.nochim.consensus
+tax_gsrdb.consensus <- 
+  assignTaxonomy(seqtab.consensus, 
+                 "TAXONOMY_FILES/gsrdb_dada2.fa",
+                 multithread = TRUE, 
+                 verbose = TRUE)
+saveRDS(tax_gsrdb.consensus, "4.tax_gsrdb.consensus.rds")
+```
+
+## R Session Information & Code
+
+This workflow was run on the [Smithsonian High Performance Cluster (SI/HPC)](https://doi.org/10.25572/SIHPC), Smithsonian Institution. Below are the specific packages and versions used in this workflow using both `sessionInfo()` and `devtools::session_info()`. Click the arrow to see the details.
+
+<details>
+
+<summary>Expand to see R Session Info</summary>
+
+{{< include include/_hydra_session_info.qmd >}}
+
+</details>
+
+<br/>
+
+<!------------------------------------------------------------------------>
+<!-------------------- Use this area to save things ---------------------->
+<!------------------------------------------------------------------------>

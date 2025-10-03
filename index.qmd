@@ -1,11 +1,108 @@
 ---
-title: "shrimp-draft"
+title: "Transisthmian Shrimp Microbiomes"
+sidebar: false
+css: ["assets/css/chooser.css", "assets/css/learn_more.css",  "assets/css/styles.css"]
+toc: false
+code-tools: false
+format:
+  html:
+    grid:
+      sidebar-width: 175px
+      body-width:	850px
+      margin-width:	275px
 ---
 
-This is a Quarto website.
+{{< include include/_setup.qmd >}}
 
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+::: {.grid .step .column-page-right}
+::: {.g-col-lg-3 .g-col-12}
 
-```{r}
-1 + 1
-```
+## Workflows
+
+#### Choose your data type<br/>and get started{.fw-light}
+:::
+
+::: {.tool .g-col-lg-9 .g-col-12}
+
+<a href="workflows/portal/index.html" role="button" class="btn btn-outline-light">
+![](images/data_code.png){width="177" fig-alt="Data-portal logo."}Data Portal
+</a>
+
+<a href="workflows/pub/index.html" role="button" class="btn btn-outline-light">
+![](images/pub.png){width="177" fig-alt="Pub logo."}Publication
+</a>
+
+<a href="workflows/ssu/index.html" role="button" class="btn btn-outline-light">
+![](images/16s_rrna.png){width="177" fig-alt="16S logo."}16S rRNA
+</a>
+
+<a href="workflows/mg/index.html" role="button" class="btn btn-outline-light">
+![](images/metagenomic.png){width="177" fig-alt="Metagenomic logo."}Metagenomics
+</a>
+
+:::
+:::
+
+
+::: {.content-block}
+::: {.features}
+
+::: {.feature}
+### Data Portal
+Quick access to data and scripts, including fastq sequence files, processing scripts, and curated datasets. Curated indicates that after processing, the data has been cleaned of unwanted taxa (e.g., NA kingdoms, potential contaminants, etc). Negative control & low-count samples have also been removed. These data are ready for downstream analysis. If you want to process the data yourself, select a pipeline, download the sequence data/processing scripts, and run the workflow.
+
+::: {.learn-more}
+[Learn more »](workflows/portal/index.qmd)
+:::
+:::
+
+::: {.feature}
+### Publication Material
+Section includes material needed for the final publication like pipeline references, information on submitting sequence data and code to public archives, materials and methods, etc.   
+
+::: {.learn-more}
+[Learn more »](workflows/pub/index.qmd)
+
+:::
+:::
+
+::: {.feature}
+### 16S rRNA Workflows
+Access to four different 16S rRNA processing pipelines. First we wrangle all sample metadata. Then we use a) Dada2 and b) LotuS3 for ASV analysis, c) Mothur for OTU analysis, and d) Mothur/MED for Minimum Entropy Decomposition. Each workflow uses paired end reads, beginning with raw fastq files, ending with sequence, taxonomy, and sample data tables. Microtable & phyloseq objects are also produced to collate the data for downstream analysis.
+
+::: {.learn-more}
+[Learn more »](workflows/ssu/index.qmd)
+:::
+:::
+
+::: {.feature}
+### Metagenomic Workflows
+Lorem ipsum dolor sit amet. Vel unde provident aut cumque quis et velit sequi non voluptas rerum eos tempora debitis aut eligendi dolores non nihil omnis. Aut debitis repudiandae cum nihil culpa ex magni expedita est dolor rerum aut voluptatum harum.
+
+
+::: {.learn-more}
+[Learn more »](workflows//mg/index.qmd)
+:::
+:::
+
+::: {.feature}
+### Interactivity
+Lorem ipsum dolor sit amet. Vel unde provident aut cumque quis et velit sequi non voluptas rerum eos tempora debitis aut eligendi dolores non nihil omnis. Aut debitis repudiandae cum nihil culpa ex magni expedita est dolor rerum aut voluptatum harum.
+
+::: {.learn-more}
+[Learn more »](/docs/interactive/)
+:::
+:::
+
+::: {.feature}
+### Websites and Books
+Lorem ipsum dolor sit amet. Vel unde provident aut cumque quis et velit sequi non voluptas rerum eos tempora debitis aut eligendi dolores non nihil omnis. Aut debitis repudiandae cum nihil culpa ex magni expedita est dolor rerum aut voluptatum harum.
+
+
+::: {.learn-more}
+[Learn more »](/docs/websites/)
+:::
+:::
+
+:::
+:::

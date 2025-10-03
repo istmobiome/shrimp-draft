@@ -1,0 +1,18 @@
+```{mermaid}
+%%| eval: true
+%%| echo: false
+flowchart LR
+    style Z fill:transparent
+    style Z font-size:1.1em
+    Z(<a href='https://github.com/michberr/MicrobeMiseq'>mothur2oligo</a></br> script)
+
+    I(<b><a href='https://mothur.org/wiki/get.lineage/'>get.lineage</a></b>) --> J(<b><a href='https://mothur.org/wiki/list.seqs/'>list.seqs</a></b>)
+    J --> K(<b><a href='https://mothur.org/wiki/get.seqs/'>get.seqs</a></b>)
+    K --> L(<b><a href='https://mothur.org/wiki/deunique.seqs/'>deunique.seqs</a></b>)
+    L --> END:::hidden
+
+    BEGIN:::hidden --> M
+    M(renamer.pl<br/>header rename)
+    M --> N(o-trim-uninformative-columns-from-alignment)
+    N --> O(decompose)    
+```

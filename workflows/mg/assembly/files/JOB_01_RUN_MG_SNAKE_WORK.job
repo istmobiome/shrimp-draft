@@ -1,0 +1,57 @@
+# /bin/sh
+# ----------------Parameters---------------------- #
+#$ -S /bin/sh
+#$ -pe mthread 30
+#$ -q uTxlM.rq
+#$ -l mres=900G,h_data=30G,h_vmem=30G,himem
+#$ -cwd
+#$ -j y
+#$ -N megahit_run_mg_workflow
+#$ -o hydra_logs/job_01_megahit_run_mg_workflow.log
+# ----------------Modules------------------------- #
+module load gcc/4.9.2
+#
+# ----------------Your Commands------------------- #
+#
+echo + `date` job $JOB_NAME started in $QUEUE with jobID=$JOB_ID on $HOSTNAME
+echo + NSLOTS = $NSLOTS
+#
+### CALLING ANVIO ###
+export PATH=/home/scottjj/miniconda3:$PATH
+export PATH=/home/scottjj/miniconda3/bin:$PATH
+which git
+source activate anvio-dev
+
+#############################################
+### Making sure everything is cool ###
+which python
+python --version
+which git
+which anvi-interactive 
+diamond --version 
+anvi-self-test -v 
+pwd
+#############################################
+
+## cog tmp
+rm -r /pool/genomics/stri_istmobiome/dbs/cog_db/tmp_mega/
+mkdir -p /pool/genomics/stri_istmobiome/dbs/cog_db/tmp_mega/
+
+## pfam tmp
+rm -r /pool/genomics/stri_istmobiome/dbs/pfam_db/tmp_mega/
+mkdir -p /pool/genomics/stri_istmobiome/dbs/pfam_db/tmp_mega/
+TMPDIR="/pool/genomics/stri_istmobiome/dbs/pfam_db/tmp_mega/"
+
+mkdir hydra_logs
+
+anvi-run-workflow -w metagenomics -c default_mg_megahit.json --additional-params --jobs 28 --resources nodes=28 --keep-going --rerun-incomplete --unlock
+anvi-run-workflow -w metagenomics -c default_mg_megahit.json --additional-params --jobs 28 --resources nodes=28 --keep-going --rerun-incomplete
+
+rm -r /pool/genomics/stri_istmobiome/dbs/cog_db/tmp_mega/
+rm -r /pool/genomics/stri_istmobiome/dbs/pfam_db/tmp_mega/
+
+
+#
+echo = `date` job $JOB_NAME don
+
+

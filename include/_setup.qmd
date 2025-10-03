@@ -1,0 +1,29 @@
+```{r}
+#| message: false
+#| results: hide
+#| echo: false
+#| eval: true
+
+###################################################
+## This partial has some general site packages and 
+## scripts. 
+###################################################
+# Load packages (optional)
+
+#### General ####
+set.seed(919191)
+
+pacman::p_load(tidyverse, fontawesome, htmltools, R.utils, 
+               magrittr, pander, here, downloadthis, zip, fs,
+               install = FALSE, update = FALSE)
+# tidyverse contains the following packages: dplyr, readr, forcats, stringr, ggplot2, tibble, lubridate, tidyr, purrr
+
+### Data Analysis ###
+pacman::p_load(microeco, Biostrings, phyloseq, microbiome, 
+               seqinr, pander, mia, microViz,
+               install = FALSE, update = FALSE)
+### Tables ###
+pacman::p_load(reactable, reactablefmtr, tinytable, 
+               install = FALSE, update = FALSE)
+options(scipen=999)
+```

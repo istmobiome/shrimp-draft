@@ -1,0 +1,71 @@
+- name: Quality filtering
+  tool: illumina-utils
+  description: Minoche QC trimmed reads
+  input: trimmed reads
+  reference: "[@eren2013filtering;@minoche2011evaluation]"
+  path: https://github.com/merenlab/illumina-utils
+
+- name: Co-Assembly
+  tool: MEGAHIT
+  description: co-assemble samples
+  input: QC reads
+  reference: "[@li2015megahit]"
+  path: https://github.com/voutcn/megahit
+
+- name: Gene Calling
+  tool: PRODIGAL
+  description: gene calling
+  input: assembled contigs 
+  reference: "[@hyatt2010prodigal]"
+  path: https://github.com/hyattpd/Prodigal
+
+- name: Taxonomic Annotation
+  tool: Kraken2
+  description: short read classification
+  input: QC reads
+  reference: "[@wood2019kraken2]"
+  path: https://github.com/DerrickWood/kraken2
+
+- name: Recruitment
+  tool: BOWTIE2
+  description: map short reads to assembly
+  input: QC reads, contigs db
+  reference: "[@langmead2012bowtie]"
+  path: https://github.com/BenLangmead/bowtie2
+
+- name: Recruitment
+  tool: SAMtools
+  description: map short reads to assembly
+  input: QC reads, contigs db
+  reference: "[@li2009samtools]"
+  path: https://github.com/samtools/samtools 
+
+- name: Profiling
+  tool: anvi-profile
+  description: Profile mapping results
+  input: BAM file 
+  reference: "[@eren2021community]"
+  path: https://anvio.org/help/main/programs/anvi-profile/ 
+
+- name: Taxonomic Annotation
+  tool: Kaiju
+  description: contig classification
+  input: contigs (dna format)
+  reference: "[@menzel2016kaiju]"
+  path: https://github.com/bioinformaticscentre/kaiju
+
+- name: Functional Annotation
+  tool: Annotation DBs
+  description: gene annotations
+  input: genes (aa format)  
+  reference: "[@mistry2021pfam;@drula2022cazyme;@aramaki2020kegg;@galperin2021cog]"
+  path: https://anvio.org/help/main/artifacts/functions/
+
+- name: Merging
+  tool: anvi-merge
+  description: create merged profile db
+  input: individual profile dbs  
+  reference: "[@eren2021community]"
+  path: https://anvio.org/help/main/programs/anvi-merge/
+  
+

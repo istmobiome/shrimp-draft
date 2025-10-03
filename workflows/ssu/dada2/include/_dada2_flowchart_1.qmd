@@ -1,0 +1,26 @@
+```{mermaid}
+%%| eval: true
+%%| echo: false
+%%| fig-align: center
+flowchart LR
+    A(Start with raw</br>sequence data)
+    A --> B(plotQualityProfile)
+    B --> C(filterAndTrim)
+    C --> D(plotErrors)
+    C --> E(learnErrors)
+    E --> END:::hidden
+    
+```
+
+```{mermaid}
+%%| eval: true
+%%| echo: false
+%%| fig-align: center
+flowchart LR
+    BEGIN:::hidden --> F(derepFastq)
+    F --> G(dada)
+    G --> I(mergePairs) 
+    I --> J(makeSequenceTable)
+    J --> K(to Merged Runs</br>Workflow)
+```
+

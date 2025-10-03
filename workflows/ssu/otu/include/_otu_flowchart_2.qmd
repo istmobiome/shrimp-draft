@@ -1,0 +1,17 @@
+```{mermaid}
+%%| eval: true
+%%| echo: false
+flowchart TB
+  L("<b><a href='https://mothur.org/wiki/get.groups/'>get.groups</a></b><br/>(NC Samples)")
+  L --> M(<b><a href='https://mothur.org/wiki/remove.seqs/'>remove.seqs</a></b>)
+  L --> N(<b><a href='https://mothur.org/wiki/remove.groups/'>remove.groups</a></b>)
+  M --> O(<b><a href='https://mothur.org/wiki/chimera.vsearch/'>chimera.vsearch</a></b>)
+  N --> O
+  O --> P(<b><a href='https://mothur.org/wiki/classify.seqs/'>classify.seqs</a></b>)
+  P --> Q(<b><a href='https://mothur.org/wiki/remove.lineage/'>remove.lineage</a></b>)
+  Q --> R(<b><a href='https://mothur.org/wiki/cluster.split/'>cluster.split</a></b>)
+  Q --> S(<b><a href='https://mothur.org/wiki/dist.seqs/'>dist.seqs</a></b>)
+
+title[Remove<br/>Negative<br/>Controls]
+style title stroke:#333,stroke-width:0px,mermaid-font-size:2.8rem
+```

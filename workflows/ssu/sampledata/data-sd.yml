@@ -1,0 +1,19 @@
+- filename: sampledata_processing.zip
+  path: /share/ssu/sampledata/sampledata_processing.zip  
+  description: |
+    Archive contains metadata and fastq rename lookup files for all six sequencing runs, the bash renaming script, and the fastq_info.txt file.
+
+- filename: all_metadata.txt
+  path: /share/ssu/sampledata/all_metadata.txt
+  description: |
+    Complete sample metadata table. 
+
+- filename: sample_data.rds
+  path: /share/ssu/sampledata/sample_data.rds
+  description: |
+    RDS file of sample dataframe that contains only the most relevant metadata for downstream analyses.
+
+- filename: sample_data.txt
+  path: /share/ssu/sampledata/sample_data.txt
+  description: |
+    Tab delimited text file version of sample dataframe that contains only the most relevant metadata for downstream analyses.

@@ -1,0 +1,70 @@
+[
+  {
+    "listing": "/workflows/ssu/sampledata/index.html",
+    "items": []
+  },
+  {
+    "listing": "/workflows/ssu/med/index.html",
+    "items": []
+  },
+  {
+    "listing": "/workflows/ssu/dada2/index.html",
+    "items": []
+  },
+  {
+    "listing": "/workflows/pub/index.html",
+    "items": [
+      "/workflows/pub/archive_data/index.html",
+      "/workflows/pub/references/index.html"
+    ]
+  },
+  {
+    "listing": "/workflows/portal/index.html",
+    "items": []
+  },
+  {
+    "listing": "/workflows/portal/data-mg.html",
+    "items": []
+  },
+  {
+    "listing": "/workflows/portal/data-dada2.html",
+    "items": []
+  },
+  {
+    "listing": "/workflows/mg/index.html",
+    "items": [
+      "/workflows/mg/setup/index.html",
+      "/workflows/mg/assembly/index.html",
+      "/workflows/mg/aa-results/index.html"
+    ]
+  },
+  {
+    "listing": "/workflows/mg/assembly/index.html",
+    "items": []
+  },
+  {
+    "listing": "/workflows/portal/data-med.html",
+    "items": []
+  },
+  {
+    "listing": "/workflows/portal/data-otu.html",
+    "items": []
+  },
+  {
+    "listing": "/workflows/pub/references/index.html",
+    "items": []
+  },
+  {
+    "listing": "/workflows/ssu/index.html",
+    "items": [
+      "/workflows/ssu/sampledata/index.html",
+      "/workflows/ssu/dada2/index.html",
+      "/workflows/ssu/otu/index.html",
+      "/workflows/ssu/med/index.html"
+    ]
+  },
+  {
+    "listing": "/workflows/ssu/otu/index.html",
+    "items": []
+  }
+]

@@ -1,0 +1,155 @@
+########################################################################
+#$ export DATA=01_TRIMMED_DATA/
+#$ export TYPE=gz
+#$ export PROC=30
+
+#$ export REF_LOC=reference_dbs
+#$ export TAXREF_FASTA=gsrdb.fasta
+#$ export TAXREF_TAX=gsrdb.tax
+#$ export ALIGNREF=silva.v4.fasta
+
+#$ export CONTAMINENTS=Chloroplast-Mitochondria-unknown-Eukaryota
+###############################################################################
+#### THIS PIPELINE BEGINS AFTER ALIGN.SEQS (AND ASSOCIATED SCREENING STEP)
+#### IN THE MOTHUR OTU PIPLINE. IF YOU HAVE NO USE FOR STRICT OTU ANAYSIS
+#### SIMPLY UNCOMMENT THE MOTHUR COMMANDS BELOW TO RUN THE FULL PIPELINE HERE
+###############################################################################
+set.dir(output=pipelineFiles_med/)
+###############################################################################
+# UNCOMMENT FROM HERE....
+###############################################################################
+#make.file(inputdir=$DATA/, type=$TYPE, prefix=shrimp)
+########################################################################
+#### had to fix shimp.files bc mothur splits name at first underscore (_)
+########################################################################
+#make.contigs(file=shrimp.files, processors=$PROC)
+#summary.seqs(fasta=shrimp.trim.contigs.fasta, count=shrimp.contigs.count_table, processors=$PROC)
+#count.groups(count=shrimp.contigs.count_table)
+#screen.seqs(fasta=current, count=current, maxambig=0, minlength=252, maxlength=254, maxhomop=6, processors=$PROC)
+#summary.seqs(fasta=current, count=current, processors=$PROC)
+#count.groups(count=current)
+#unique.seqs(fasta=current, count=current)
+#summary.seqs(count=current, processors=$PROC)
+########################################################################
+#### Aligning reads
+########################################################################
+# https://mothur.org/wiki/silva_reference_files/
+#### Prep reference file
+#pcr.seqs(fasta=$REF_LOC/silva.seed_v138_2.align, start=13862, end=23445, keepdots=F, processors=$PROC)
+#rename.file(input=pipelineFiles/silva.seed_v138_2.pcr.align, new=pipelineFiles/$ALIGNREF)
+#summary.seqs(fasta=pipelineFiles/$ALIGNREF, processors=$PROC)
+#### Align reads
+#align.seqs(fasta=shrimp.trim.contigs.good.unique.fasta, reference=pipelineFiles/$ALIGNREF, processors=$PROC)
+#summary.seqs(fasta=shrimp.trim.contigs.good.unique.align, count=shrimp.trim.contigs.good.count_table, processors=$PROC)
+########################################################################
+#### Further processing
+########################################################################
+#screen.seqs(fasta=current, count=current, start=1, end=9583, processors=$PROC)
+#summary.seqs(fasta=current, count=current, processors=$PROC)
+#count.groups(count=current)
+#filter.seqs(fasta=current, vertical=T, trump=., processors=$PROC)
+#unique.seqs(fasta=current, count=current)
+#summary.seqs(fasta=current, count=current, processors=$PROC)
+###############################################################################
+# ....TO HERE
+###############################################################################
+#### Copy mothur output files
+########################################################################
+system(cp pipelineFiles/shrimp.trim.contigs.good.unique.good.filter.unique.fasta pipelineFiles_med/)
+system(cp pipelineFiles/shrimp.trim.contigs.good.unique.good.filter.count_table pipelineFiles_med/)
+########################################################################
+#### Remove Negative Control samples (files generated in R)
+########################################################################
+
+########## IN R ########################################################
+#tmp_accnos <- readr::read_delim(here(work_here, "nc_screen/shrimp.files"), delim = "\t", col_names = FALSE)
+#tmp_accnos[, 2:3] <- NULL
+#tmp_accnos <- tmp_accnos[grepl("Control_", tmp_accnos$X1), ]
+#readr::write_delim(tmp_accnos, file = here(work_here, "nc_screen/nc_samples.accnos"), col_names = FALSE)
+########################################################################
+get.groups(fasta=shrimp.trim.contigs.good.unique.good.filter.unique.fasta, count=shrimp.trim.contigs.good.unique.good.filter.count_table, accnos=nc_samples.accnos)
+rename.file(input=shrimp.trim.contigs.good.unique.good.filter.unique.pick.fasta, new=nc.fasta)
+rename.file(input=shrimp.trim.contigs.good.unique.good.filter.pick.count_table, new=nc.count_table)
+summary.seqs(fasta=nc.fasta, count=nc.count_table, processors=$PROC)
+list.seqs(count=nc.count_table)
+count.seqs(count=nc.count_table, compress=f)
+get.seqs(accnos=nc.accnos, fasta=shrimp.trim.contigs.good.unique.good.filter.unique.fasta, count=shrimp.trim.contigs.good.unique.good.filter.count_table)
+rename.file(input=shrimp.trim.contigs.good.unique.good.filter.unique.pick.fasta, new=subset.fasta)
+rename.file(input=shrimp.trim.contigs.good.unique.good.filter.pick.count_table, new=subset.count_table)
+count.seqs(count=subset.count_table, compress=f)
+########################################################################
+########## IN R ########################################################
+########################################################################
+#full_count_tab <- readr::read_delim(here(work_here, "nc_screen/subset.full.count_table"), delim = "\t", col_names = TRUE)
+#control_cols     <- grep("^Control_", names(full_count_tab), value = TRUE)
+#noncontrol_cols  <- setdiff(names(full_count_tab)[-(1:2)], control_cols)
+#read_totals <- full_count_tab %>%
+#  rowwise() %>%
+#  mutate(
+#    total_reads_nc   = sum(c_across(all_of(control_cols)), na.rm = TRUE),
+#    total_reads_non_nc = sum(c_across(all_of(noncontrol_cols)), na.rm = TRUE)
+#  ) %>%
+#  ungroup() %>%
+#  select(1, 2, total_reads_nc, total_reads_non_nc)
+#read_totals <- read_totals %>% dplyr::rename("total_reads" = 2)
+#tmp_read_totals <- read_totals %>% dplyr::mutate(perc_reads_in_nc = 100*(total_reads_nc / (total_reads_nc + total_reads_non_nc)), .after = "total_reads_non_nc")
+#tmp_read_totals$perc_reads_in_nc <- round(tmp_read_totals$perc_reads_in_nc, digits = 6)
+#control_cols     <- grep("^Control_", names(full_count_tab), value = TRUE)
+#noncontrol_cols  <- setdiff(names(full_count_tab)[-(1:2)], control_cols)
+# rowwise tally of non-zero columns
+#samp_totals <- full_count_tab %>%
+#  rowwise() %>%
+#  mutate(
+#    num_nc_samp     = sum(c_across(all_of(control_cols)) != 0, na.rm = TRUE),
+#    num_non_nc_samp = sum(c_across(all_of(noncontrol_cols)) != 0, na.rm = TRUE)
+#  ) %>%
+#  ungroup() %>%
+#  select(1, num_nc_samp, num_non_nc_samp)
+#samp_totals$total_samp <- samp_totals$num_nc_samp + samp_totals$num_non_nc_samp
+#samp_totals <- samp_totals %>%  dplyr::relocate("total_samp", .after = "Representative_Sequence")
+#samp_totals <- samp_totals %>% dplyr::mutate(perc_nc_samp = 100*( num_nc_samp / (num_nc_samp + num_non_nc_samp)), .after = "num_non_nc_samp")
+#nc_check <- dplyr::left_join(tmp_read_totals, samp_totals, by = "Representative_Sequence")
+#write_delim(nc_check, here(work_here, "nc_screen/reads_in_nc_samples.txt"), delim = "\t")
+#nc_remove <- nc_check %>% filter(perc_reads_in_nc > 10 | perc_nc_samp > 10)
+#nc_remain <- dplyr::anti_join(nc_check, nc_remove)
+#rem_nc_reads <- sum(nc_remove$total_reads_nc)
+#rem_sam_reads <- sum(nc_remove$total_reads_non_nc)
+#per_reads_rem <- round(100*( rem_nc_reads / (rem_nc_reads + rem_sam_reads)), digits = 3)
+#ret_nc_reads <- sum(nc_remain$total_reads_nc)
+#ret_sam_reads <- sum(nc_remain$total_reads_non_nc)
+#per_reads_ret <- round(100*( ret_nc_reads / (ret_nc_reads + ret_sam_reads)), digits = 3)
+
+########################################################################
+remove.seqs(accnos=nc_repseq_remove.accnos, fasta=shrimp.trim.contigs.good.unique.good.filter.unique.fasta, count=shrimp.trim.contigs.good.unique.good.filter.count_table)
+count.groups(count=shrimp.trim.contigs.good.unique.good.filter.pick.count_table)
+########################################################################
+########## IN R ########################################################
+########################################################################
+#tmp_before <- read_tsv(here(work_here, "nc_screen/shrimp.trim.contigs.good.unique.good.filter.count.summary"), col_names = FALSE, col_select = 1)
+#tmp_after <- read_tsv(here(work_here, "nc_screen/shrimp.trim.contigs.good.unique.good.filter.pick.count.summary"), col_names = FALSE, col_select = 1)
+#tmp_nc_lost <- anti_join(tmp_before, tmp_after)
+#tmp_nc_lost$X1
+#nc_to_remove <- semi_join(tmp_before, tmp_after)
+#nc_to_remove <- nc_to_remove %>% dplyr::filter(stringr::str_starts(X1, "Control")) 
+#readr::write_delim(nc_to_remove, file = here(work_here, "nc_screen/nc_samples_remove.accnos"), col_names = FALSE)
+########################################################################
+remove.groups(count=shrimp.trim.contigs.good.unique.good.filter.pick.count_table, fasta=shrimp.trim.contigs.good.unique.good.filter.unique.pick.fasta, accnos=nc_samples_remove.accnos)
+########################################
+### NEGATIVE CONTROLS Should be GONE ###
+########################################
+summary.seqs(fasta=shrimp.trim.contigs.good.unique.good.filter.unique.pick.pick.fasta, count=shrimp.trim.contigs.good.unique.good.filter.pick.pick.count_table, processors=$PROC)
+count.groups(count=shrimp.trim.contigs.good.unique.good.filter.pick.pick.count_table)
+chimera.vsearch(fasta=shrimp.trim.contigs.good.unique.good.filter.unique.pick.pick.fasta, count=shrimp.trim.contigs.good.unique.good.filter.pick.pick.count_table, dereplicate=t, processors=$PROC)
+summary.seqs(fasta=shrimp.trim.contigs.good.unique.good.filter.unique.pick.pick.denovo.vsearch.fasta, count=shrimp.trim.contigs.good.unique.good.filter.pick.pick.denovo.vsearch.count_table, processors=$PROC)
+count.groups(count=shrimp.trim.contigs.good.unique.good.filter.pick.pick.denovo.vsearch.count_table)
+classify.seqs(fasta=shrimp.trim.contigs.good.unique.good.filter.unique.pick.pick.denovo.vsearch.fasta, count=shrimp.trim.contigs.good.unique.good.filter.pick.pick.denovo.vsearch.count_table, reference=reference_dbs/gsrdb.fasta, taxonomy=reference_dbs/gsrdb.tax, processors=$PROC)
+remove.lineage(fasta=shrimp.trim.contigs.good.unique.good.filter.unique.pick.pick.denovo.vsearch.fasta, count=shrimp.trim.contigs.good.unique.good.filter.pick.pick.denovo.vsearch.count_table, taxonomy=shrimp.trim.contigs.good.unique.good.filter.unique.pick.pick.denovo.vsearch.gsrdb.wang.taxonomy, taxon=Chloroplast-Mitochondria-unknown-Eukaryota)
+summary.seqs(fasta=shrimp.trim.contigs.good.unique.good.filter.unique.pick.pick.denovo.vsearch.pick.fasta, count=shrimp.trim.contigs.good.unique.good.filter.pick.pick.denovo.vsearch.pick.count_table, processors=$PROC)
+summary.tax(taxonomy=shrimp.trim.contigs.good.unique.good.filter.unique.pick.pick.denovo.vsearch.gsrdb.wang.pick.taxonomy, count=shrimp.trim.contigs.good.unique.good.filter.pick.pick.denovo.vsearch.pick.count_table)
+count.groups(count=shrimp.trim.contigs.good.unique.good.filter.pick.pick.denovo.vsearch.pick.count_table)
+############################################
+### PROCEED To  mothur2oligo.sh pipeline ###
+### MUST BE RUN IN MOTHUR ENVIRONMENT  #####
+############################################
+
+

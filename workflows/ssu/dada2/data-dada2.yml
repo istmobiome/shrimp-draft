@@ -1,0 +1,39 @@
+- filename: BCS_26_read_changes.txt 
+  path: /share/ssu/dada2/tables/BCS_26_read_changes.txt  
+  description: |
+    Pre merge read changes for sequencing run BCS_26
+
+- filename: BCS_28_read_changes.txt
+  path: /share/ssu/dada2/tables/BCS_28_read_changes.txt  
+  description: |
+    Pre merge read changes for sequencing run BCS_28
+
+- filename: BCS_29_read_changes.txt
+  path: /share/ssu/dada2/tables/BCS_29_read_changes.txt  
+  description: |
+    Pre merge read changes for sequencing run BCS_29
+
+- filename: BCS_30_read_changes.txt
+  path: /share/ssu/dada2/tables/BCS_30_read_changes.txt
+  description: |
+    Pre merge read changes for sequencing run BCS_30
+
+- filename: BCS_34_read_changes.txt
+  path: /share/ssu/dada2/tables/BCS_34_read_changes.txt
+  description: |
+    Pre merge read changes for sequencing run BCS_34
+
+- filename: BCS_35_read_changes.txt  
+  path: /share/ssu/dada2/tables/BCS_35_read_changes.txt
+  description: |
+    Pre merge read changes for sequencing run BCS_35
+
+- filename: asv_in_nc_samples.txt 
+  path: /share/ssu/dada2/tables/asv_in_nc_samples.txt
+  description: |
+    Abundance table of ASVs detected in Negative Control samples. 
+
+- filename: dada2_pipeline_read_changes.txt  
+  path: /share/ssu/dada2/tables/dada2_pipeline_read_changes.txt
+  description: |
+    Read changes for all samples through Dada2 pipeline

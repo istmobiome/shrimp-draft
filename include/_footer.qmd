@@ -1,0 +1,96 @@
+```{r}
+#| message: false 
+#| results: hide
+#| eval: true
+#| echo: false
+#############################
+######## For testing ########
+#############################
+# source("../assets/scripts/footer_functions.R")
+# gh_path <- capture.output(cat(github_footer(gh_user_name, gh_repo, input_file = "test.qmd"))) 
+#############################
+project_root <- quarto::get_running_project_root()
+# Construct the full path to your functions script
+functions_path <- file.path(project_root, "assets/scripts/footer_functions.R")
+# Source the functions script
+source(functions_path)
+```
+
+#### Detailed Session Info {.appendix}
+
+{{< dstart summary="Expand to see Session Info" >}}
+
+```{r}
+#| eval: true
+#| echo: false
+library(sessioninfo)
+# save the session info as an object
+pkg_sesh <- session_info(pkgs = "attached")
+# get the quarto version
+quarto_version <- system("quarto --version", intern = TRUE)
+# inject the quarto info
+pkg_sesh$platform$quarto <- paste(
+  system("quarto --version", intern = TRUE),
+  "@", quarto::quarto_path()
+)
+pkg_sesh_dev <- devtools::session_info(pkgs = "attached")
+# print it out
+pkg_sesh
+cat("\n======   Devtools Session info   ===================================\n\n")
+pkg_sesh_dev$packages
+```
+
+{{< dstop >}}
+
+#### Last updated on {.appendix}
+
+`r get_time()`
+
+
+```{r}
+#| message: false 
+#| results: hide
+#| eval: true
+#| echo: false
+remove(list = ls())
+```
+
+```{r}
+#| echo: false
+#| eval: false
+####  Source Code {.appendix}
+#move this outside the code chunk to activate. Need to change the url in "source_code" script in tools/footer_functions.R
+#The source code for this page can be found on GitHub `r fa(name = "github")` by visiting the [`r page_name()`](`r source_code()`) page. # Also cut out [`r page_name()`] since every page is called index.qdm
+```
+
+```{r}
+#| echo: false
+#### Data Availability {.appendix}
+#Data generated in this workflow and the Rdata need to run the workflow can be accessed on figshare at [10.25573/data.16828063](https://doi.org/10.25573/data.16828063).
+```
+
+```{r}
+#| message: false 
+#| results: hide
+#| eval: false
+#| echo: false
+#library(fontawesome)
+#gh_user_name <- "istmobiome"
+#gh_repo <- "trans-shrimp"
+#############################
+######## For testing ########
+#############################
+# source("../assets/scripts/footer_functions.R")
+# gh_path <- capture.output(cat(github_footer(gh_user_name, gh_repo, input_file = "test.qmd"))) 
+#############################
+#project_root <- quarto::get_running_project_root()
+# Construct the full path to your functions script
+#functions_path <- file.path(project_root, "assets/scripts/footer_functions.R")
+# Source the functions script
+source(functions_path)
+####  Source Code {.appendix}
+
+#The source code for this page can be found by visiting the [{{< meta title >}}](`r source_code(gh_user_name, gh_repo)`) page on GitHub `r fa(name = "github")` 
+```
+
+

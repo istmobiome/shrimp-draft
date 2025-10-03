@@ -1,22 +1,153 @@
 project:
   type: website
+  resources:
+    - assets/**
+    - tools/**  
+    - share/**  
+    - "!share/*/*/*_curated_data/"
   output-dir: docs
+  render:
+    - "*.qmd"
+# Do not render
+    - "!sandbox/"
+    - "!page_build/"
+    - "!working_files/*"
+    - "!README.md"
+    - "!docs/"
+    - "!sandbox.qmd"
+    - "!common.qmd"
+    #- "!share/*/*/*_curated_data/"
+# Finished pages, comment # out to build whole site
+    - "!about.qmd"
+   # - "!workflows/ssu/otu"
+   # - "!workflows/ssu/med"
+   # - "!workflows/ssu/dada2"
+    - "!workflows/ssu/lotus3"
+   # - "!workflows/ssu/sampledata"
+   # - "!workflows/pub/*"
+   # - "!workflows/mg/*"
+   # - "!workflows/portal/*"
+highlight-style: arrow
 
 website:
-  title: "shrimp-draft"
+  title: "TransIsthmian Shrimp"
+  favicon: "assets/favicon.ico"
+  page-footer:
+    left: |
+      Site constructed using [Quarto](https://quarto.org/).
+    center:
+      - text: "Site Information"
+        href: site_info.qmd
+#      - text: "FAQ"
+#        href: docs/faq/index.qmd
+#      - text: "License"
+#        href: license.md
+#      - text: "Trademark"
+#        href: trademark.qmd
+    right: |
+      © Copyright 2025 [metacrobe](https://metacrobe.github.io/) & [The Istmobiome Project](https://istmobiome.rbind.io/).
+  site-url: https://istmobiome.github.io/trans-shrimp/
+  repo-url: https://github.com/istmobiome/trans-shrimp/
+  repo-actions: [source, edit, issue]
+  repo-link-target: "_blank"
+  page-navigation: true
+  bread-crumbs: true
+  back-to-top-navigation: false  
+  reader-mode: true
+  search:
+    location: navbar
+    type: overlay
   navbar:
+    logo: "images/icon.png"
+    logo-alt: "Istmobiome logo."
+    title: false
+    collapse-below: lg
+    background: light
     left:
-      - href: index.qmd
-        text: Home
-      - about.qmd
+      - text: Home
+        href: index.qmd
+      - text: "Data Portal"
+        href: workflows/portal/index.qmd
+      - text: "16S rRNA"
+        href: workflows/ssu/index.qmd
+      - text: "Metagenomics"
+        href: workflows/mg/index.qmd
+      - text: "Paper"
+        href: workflows/pub/index.qmd
+    right:
+      - icon: github
+        href: https://github.com/istmobiome/trans-shrimp/
+        aria-label: Trans Shrimp
+      #- icon: question
+      #  href: about.qmd
+  sidebar:
+      collapse-level: 2
+      style: "floating"
+      align: left
+      contents:
+        - workflows/portal/index.qmd
+        - text: "---" 
+        - section: "16S rRNA"
+          href: workflows/ssu/index.qmd
+          contents:
+            - workflows/ssu/sampledata/index.qmd
+            - workflows/ssu/dada2/index.qmd
+            - workflows/ssu/otu/index.qmd
+            - workflows/ssu/med/index.qmd
+        - text: "---"     
+        - section: "Metagenomics"
+          href: workflows/mg/index.qmd
+          contents:
+            - workflows/mg/setup/index.qmd
+            - workflows/mg/assembly/index.qmd
+            - workflows/mg/aa-results/index.qmd
+        - text: "---"     
+        - section: "Publication Material"
+          href: workflows/pub/index.qmd
+          contents:
+            - workflows/pub/references/index.qmd
+            - workflows/pub/archive_data/index.qmd
 
+bibliography: assets/cite.bib
+filters:
+  - linkate
 format:
   html:
     theme:
-      - cosmo
-      - brand
-    css: styles.css
+      light: [cosmo, assets/css/theme.scss]
+      dark: [cosmo, assets/css/theme-dark.scss]
+    fontsize: 1.1em  
+    anchor-sections: true
+    number-sections: false
+    embed-resources: false
+    css: assets/css/styles.css
+    code-copy: true
+    code-link: true
+    code-overflow: wrap
+    code-fold: false
+    code-summary: "Show the code"
+    code-tools:
+      source: true
+      toggle: false
+      caption: none
     toc: true
-
+    toc-depth: 3
+    toc-expand: 1
+    respect-user-color-scheme: false
+    appendix-style: default
+    grid:
+      sidebar-width:	225px
+      body-width:	900px
+      margin-width:	250px
+    title-block-banner: true
+    #title-block-banner-color: "#FEFEFE"
+    #title-block-banner: '#113858'
+    #title-block-style: default
+execute:
+  freeze: true
+  echo: true
+  eval: false
+  warning: false
+  message: false
 
 

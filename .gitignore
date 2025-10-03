@@ -1,7 +1,19 @@
-.Rproj.user
+# General R/RStudio/quarto
+.Rproj.user/
 .Rhistory
 .RData
 .Ruserdata
-
+.quarto/
+.DS_Store
+**/.DS_Store
 /.quarto/
 **/*.quarto_ipynb
+
+# Project specific
+working_files/
+sandbox/
+sandbox.qmd
+page_build/
+**/*_curated_data/
+*_curated_data/
+!*_curated_data.zip

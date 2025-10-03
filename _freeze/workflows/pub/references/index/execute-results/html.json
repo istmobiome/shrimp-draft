@@ -1,0 +1,15 @@
+{
+  "hash": "2bb9c6a1692a472e02e26686cc0c1530",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"Workflow References\"\ndescription: |\n  Quick access to references for metagenomic and 16S RNA  processing. \nlisting: \n  page-size: 16\n  id: references-listings\n  contents: references.yaml\n  type: table\n  sort-ui: [name, workflow, type]\n  fields: [name, version, workflow, type, reference]\n  field-links: \n    - name\n  field-display-names: \n    name: Name\n    version: Version\n    workflow: Workflow\n    type: Type\n    reference: Reference\nformat:\n  html:\n    anchor-sections: false\n    code-fold: false\n    toc: true\n    toc-depth: 0\n    #page-layout: full  \ntitle-block-banner: false\nbread-crumbs: false\npage-navigation: false\n---\n\n<br/>\n\n::: {#references-listings .column-body-outset-right}\n:::\n\n\n::: {.column-body-outset-right}\n\n### References\n\n{{< dstart summary=\"Expand to see the formatted references\" >}}\n\n::: {#refs}\n:::\n\n{{< dstop >}}\n\n:::\n\n\n::: {.cell}\n\n:::\n\n\n#### Detailed Session Info {.appendix}\n\n{{< dstart summary=\"Expand to see Session Info\" >}}\n\n\n::: {.cell}\n::: {.cell-output .cell-output-stdout}\n\n```\n─ Session info ───────────────────────────────────────────────────────────────\n setting  value\n version  R version 4.5.1 (2025-06-13)\n os       macOS Ventura 13.7.8\n system   x86_64, darwin20\n ui       X11\n language (EN)\n collate  en_US.UTF-8\n ctype    en_US.UTF-8\n tz       America/Los_Angeles\n date     2025-10-02\n pandoc   3.6.3 @ /Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/x86_64/ (via rmarkdown)\n quarto   1.8.25 @ /Applications/quarto/bin/quarto\n\n─ Packages ───────────────────────────────────────────────────────────────────\n package     * version date (UTC) lib source\n sessioninfo * 1.2.3   2025-02-05 [1] CRAN (R 4.5.0)\n\n [1] /Library/Frameworks/R.framework/Versions/4.5-x86_64/Resources/library\n * ── Packages attached to the search path.\n\n──────────────────────────────────────────────────────────────────────────────\n```\n\n\n:::\n\n::: {.cell-output .cell-output-stdout}\n\n```\n\n======   Devtools Session info   ===================================\n```\n\n\n:::\n\n::: {.cell-output .cell-output-stdout}\n\n```\n package     * version date (UTC) lib source\n sessioninfo * 1.2.3   2025-02-05 [1] CRAN (R 4.5.0)\n\n [1] /Library/Frameworks/R.framework/Versions/4.5-x86_64/Resources/library\n * ── Packages attached to the search path.\n```\n\n\n:::\n:::\n\n\n{{< dstop >}}\n\n#### Last updated on {.appendix}\n\n2025-10-02\n\n\n\n::: {.cell}\n\n:::\n\n\n\n::: {.cell}\n\n:::\n\n\n\n::: {.cell}\n\n:::\n\n\n\n::: {.cell}\n\n:::\n\n\n\n\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

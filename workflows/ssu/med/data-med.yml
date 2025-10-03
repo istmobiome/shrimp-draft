@@ -1,0 +1,9 @@
+- filename: reads_in_nc_samples.txt
+  path: /share/ssu/med/reads_in_nc_samples.txt
+  description: |
+    Abundance table of reads detected in Negative Control samples. 
+
+- filename: mothur_med_pipeline_read_changes.txt
+  path: /share/ssu/med/mothur_med_pipeline_read_changes.txt
+  description: |
+    Read changes for all samples through mothur/MED pipeline

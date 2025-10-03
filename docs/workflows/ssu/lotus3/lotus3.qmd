@@ -1,0 +1,340 @@
+---
+title: "2. DADA2 ASV Workflow"
+description: |
+  Workflow for processing 16S rRNA samples for ASV analysis using DADA2. Workflow uses paired end reads, beginning with raw fastq files, ending with sequence and taxonomy tables. A Microtable Object is produced to collate the data for downstream analysis. 
+listing: 
+    id: dada2-listing
+    contents: data-dada2.yml
+    type: table
+    sort-ui: false
+    filter-ui: false
+    fields: 
+      - filename
+      - description
+    field-links: 
+      - filename
+    field-display-names: 
+      filename: File Name
+      description: Description
+---
+
+{{< include /include/_setup.qmd >}}
+
+```{r}
+#| eval: true
+#| echo: false
+#| comment: set wd for here
+remove(list = ls())
+load(here("page_build", "dada2_part2.rdata"))
+workflow_name <- "lotus3" # e.g., med, dada2, etc
+work_here <- paste0("working_files/ssu/", workflow_name)
+share_here <- paste0("share/ssu/", workflow_name)
+source(here("assets/scripts", "summarize_objs.R"))
+source(here("assets/scripts", "mia_metrics.R"))
+```
+
+## Workflow Input
+
+::: {.callout-note icon=false}
+## Data & Scripts
+
+Fastq sequence files, scripts, and other assets for running this workflow can be found on the [Lotus3 Data Portal](/workflows/portal/data-lotus3.qmd) page. 
+
+The Data Portal page also contains a link to the curated output of this pipeline–-feature-sample count table, taxonomy table, sample metadata, & representative fasta sequences. Data is available as stand-alone text files, OR bundled in microtable and phyloseq objects. Archive also includes a table tracking sample read changes.
+:::
+
+#### Required Packages & Software
+
+
+## Overview
+
+This workflow uses the [LotuS3](https://github.com/hildebra/lotus3/)[@ozkurt2022lotus2] pipeline to infer ASVs, remove chimeric reads, and assign taxonomy. The `lotus3` command requires a few user provided files and and inputs. Here is a  detailed explanation of the parameters we used. There are many more options available for customizing the pipeline.
+
+::: {.border}
+
+- **-i** input directory (uses mapping file). 
+- **-map** mapping file   
+- **-o** output directory
+- **-sdmopt** SDM option file, defaults to "configs/sdm_miSeq.txt" in current dir. *This file is installed with the LotuS3 package.*
+- **-p** sequencing platform: PacBio, PacBio_GA, 454, AVITI, miSeq or hiSeq.
+- **-amplicon_type** <SSU|LSU|ITS|ITS1|ITS2|custom>
+- **-forwardPrimer** forward primer
+- **-reversePrimer** reverse primer
+- **-clustering** sequence clustering algorithm: (1) UPARSE, (2) swarm, (3) cd-hit, (6) unoise3, (7) dada2, (8) VSEARCH. 
+- **-refDB** <KSGP|SLV|GG2|HITdb|PR2|UNITE|beetax> Can also be a custom  formatted database
+- **-tax4refDB** <file> In conjunction with a custom fasta file provided to argument -refDB, this file contains for each fasta entry in the reference DB a taxonomic annotation string, with the same number of taxonomic levels for each, tab separated.
+- **-taxAligner** <0|blast|lambda|utax|sintax|vsearch|usearch>
+- **-threads** number of threads to be used. 
+:::
+
+::: {.callout-warning}
+The structure and content of the mapping file is very important. Please consult the LotuS documentation for more details. 
+:::
+
+
+# Read Processing {#read-processing}
+
+We processed each of the six sequencing runs separately for the first part of the DADA2 workflow. While some of the outputs are slightly different (e.g. quality scores, filtering, ASV inference, etc.) the code is the same. For posterity, code for each run is included here.
+
+
+
+
+
+
+
+
+
+
+
+
+
+{{< include include/_lotus3.qmd >}}
+
+
+
+Once you have the trimmed fastq files, the mapping files, and have LotuS3 installed, you can execute the following commands to run the pipelines. 
+
+```
+
+SSU
+lotus3 -i . -map ssu_miSeqMap.sm.txt -o LOTUS3_ASV -sdmopt ${LOTUS3_DIR}/configs/sdm_miSeq.txt -p miSeq -amplicon_type SSU -CL dada2 -refDB KSGP -taxAligner lambda -threads 20
+
+ITS
+lotus3 -i . -map its_miSeqMap.sm.txt -o LOTUS3_ASV -sdmopt ${LOTUS3_DIR}/configs/sdm_miSeq_ITS.txt -p miSeq -amplicon_type ITS -CL dada2 -refDB UNITE -taxAligner lambda -threads 20
+
+###############################################################################
+```
+
+For a full description of each workflow and summaries of the results, please see the relevant sections below. 
+
+## Citable resources 
+
+#### Tools used in the LotuS3 workflow:
+
+::: {.border}
+
+1. LotuS3  An ultrafast and highly accurate tool for amplicon sequencing analysis [@ozkurt2022lotus2]. 
+2. DADA2 ASV clustering [@callahan2016dada2].
+3. VSEARCH v2.30.0 (chimera de novo / ref; OTU alignments) [@rognes2016vsearch].
+4. Poisson binomial model based read filtering [@puente2016novel].
+5. Offtarget removal (against phiX) [@bedarf2021much].
+6. minimap2 v2.30 used in offtarget aligments [@li2018minimap2].
+7. LULU multicopy rRNA removal [@froslev2017algorithm].
+8. Lambda3 taxonomic similarity search [@hauswedell2024lambda3].
+9. KSGP SSU specific tax database (for SSU workflow) [@grant2023improved].
+10. ITSx v1.3 removal of non ITS OTUs (for ITS and Oomycete workflows) [@bengtsson2013improved]
+11. R microeco package [@liu2021microeco]. 
+12. phyloseq R package [@mcmurdie2013phyloseq].
+13. SeqKit2 for sequence and alignment processing [@shen2024seqkit2]
+
+:::
+
+</br>
+
+## References
+
+::: {#refs}
+:::
+
+# LotuS3 Workflow
+
+
+## Individual Workflow
+
+::: {.panel-tabset .nav-pills .nav-fill}
+
+# SSU
+
+Here is the command used to analyze the SSU dataset. 
+
+```{bash}
+lotus3 -i .  \
+       -map ssu_miSeqMap.sm.txt  \
+       -o LOTUS3_ASV  \
+       -sdmopt sdm_miSeq.txt  \
+       -p miSeq  \
+       -amplicon_type SSU  \
+       -CL dada2  \
+       -refDB KSGP  \
+       -taxAligner lambda  \
+       -threads 20
+```
+
+::: {.callout-note appearance="default" icon=false}
+
+### {{< fa download >}} &nbsp; ssu_miSeqMap.sm.txt
+
+{{< downloadthis files/config/ssu_miSeqMap.sm.txt dname="ssu_miSeqMap.sm" label="SSU mapping file" icon="code-slash" type="link" >}}
+
+:::
+
+```{r}
+#| echo: false
+rm(list = ls())
+tmp_ds <- c("ssu", "its")
+for (ds in tmp_ds){
+  
+  tmp_file_path <- paste0("working_files/LOTUS3/", ds, "/LotuS_run.log")
+  tmp_log <- readLines(tmp_file_path)
+  
+  tmp_log <- tmp_log[-(1:9)]
+  
+  tmp_log <- gsub("/home/scottjj", "~", tmp_log)
+  
+  tmp_dash <- grep("^--*$", tmp_log)
+  tmp_replace <- "```" 
+  tmp_log[tmp_dash] <- tmp_replace
+
+  tmp_matches <- grep("^-+\\s*I/O.*", tmp_log)
+  tmp_log[tmp_matches] <- paste0("```\n", tmp_log[tmp_matches])
+
+  tmp_matches <- grep("^-+\\s*I/O.*", tmp_log)
+  tmp_log[tmp_matches] <- paste0("```\n", tmp_log[tmp_matches])
+  
+  i <- 1
+  while (i < length(tmp_log)) {
+     if (tmp_log[i] == tmp_log[i + 1]) {
+       tmp_log <- append(tmp_log, "", after = i)
+       i <- i + 1  # skip over the inserted blank
+  }
+  i <- i + 1
+  }
+
+  writeLines(tmp_log, paste0("include/data/_lotus3_output_", ds, ".qmd"))
+  rm(list = ls(pattern = "tmp_"))
+}
+```
+
+
+<details>
+  <summary>Click here to see the verbose output of LotuS3 pipeline</summary>
+
+{{< include include/data/_lotus3_output_ssu.qmd >}}
+
+</details>
+
+# ITS
+
+Here is the command used to analyze the ITS dataset. 
+
+```{bash}
+lotus3 -i .  \
+       -map sdm_miSeq_ITS.txt  \
+       -o LOTUS3_ASV \
+       -sdmopt sdm_miSeq.txt  \
+       -p miSeq  \
+       -amplicon_type ITS  \
+       -CL dada2  \
+       -refDB UNITE  \
+       -taxAligner lambda  \
+       -threads 20
+```
+
+::: {.callout-note appearance="default" icon=false}
+
+### {{< fa download >}} &nbsp; its_miSeqMap.sm.txt
+
+{{< downloadthis files/config/its_miSeqMap.sm.txt dname="its_miSeqMap.sm" label="ITS mapping file" icon="code-slash" type="link" >}}
+
+:::
+
+<details>
+  <summary>Click here to see the verbose output of LotuS3 pipeline</summary>
+
+{{< include include/data/_lotus3_output_its.qmd >}}
+
+</details>
+
+:::
+
+# Pipeline Summary
+
+The LotuS3 pipeline produces numerous output files  but for our purposes there are four specific files we are interested in:
+
+1. `phyloseq.Rdata`
+2. `OTU.fna`
+3. `OTU.txt`
+4. `hiera_BLAST.txt`
+
+We will mainly work from the `phyloseq_xyz.Rdata` (renamed  where `xyz` is the dataset name) since this contains the OTU Table, sample Data, taxonomy table, and phylogenetic Tree. Before digging into the data let us first summarize the results of the pipeline. For that we will load the phyloseq data.
+
+::: {.panel-tabset .nav-pills .nav-fill}
+
+```{bash}
+#| echo: false
+cp working_files/LOTUS3/ssu/phyloseq.Rdata working_files/LOTUS3/ssu/phyloseq_ssu.Rdata
+cp working_files/LOTUS3/its/phyloseq.Rdata working_files/LOTUS3/its/phyloseq_its.Rdata
+```
+
+```{r}
+#| echo: false
+#| eval: true
+# Script to generate final read count summary tables
+process_dataset <- function(dataset) {
+  # Load the phyloseq object
+  load(paste0("working_files/LOTUS3/", dataset, "/phyloseq_", dataset, ".Rdata"))
+  
+  # Read cutadapt tracking file
+  tmp_rc <- readr::read_delim(paste0("files/tables/", dataset, "_cutadapt_track.txt"))
+  tmp_rc <- tmp_rc %>% 
+    dplyr::rename("raw_rc" = 2) %>% 
+    dplyr::rename("cutadapt_rc" = 3)
+  # Extract final read counts
+  tmp_tab <- data.frame(sample_sums(physeq)) %>% 
+    tibble::rownames_to_column("SampleID") %>% 
+    dplyr::rename("lotus3_rc" = 2)
+  
+  # Merge with cutadapt tracking
+  dataset_rc <- dplyr::left_join(tmp_rc, tmp_tab, by = "SampleID")
+  
+  # Write out merged table
+  out_file <- paste0("files/tables/", dataset, "_final_track.txt")
+  readr::write_delim(dataset_rc, out_file, delim = "\t")
+  
+  # Reload and clean up names
+  dataset_rc <- readr::read_delim(out_file)
+  #names(dataset_rc)[2] <- "raw_rc"
+  #names(dataset_rc)[3] <- "cutadapt_rc"
+  #names(dataset_rc)[4] <- "lotus3_rc"
+  dataset_rc$per_reads_kept <- round(dataset_rc$lotus3_rc / dataset_rc$raw_rc, digits = 3)
+  
+  # Assign object dynamically (e.g., ssu_rc, amf_rc, etc.)
+  assign(paste0(dataset, "_rc"), dataset_rc, envir = .GlobalEnv)
+}
+
+# ---- Run on multiple datasets ----
+datasets <- c("ssu", "its")   # add more names here
+purrr::walk(datasets, process_dataset)
+objects()
+ssu_rc
+```
+
+# SSU
+
+```{r}
+#| echo: false
+#| eval: true
+#| label: tbl-make-pipeline-table-ssu
+#| tbl-cap: "Read changes through the LotuS3 pipeline."
+tmp_react <- ssu_rc
+make_lotus3_summ_table(tmp_react)
+```
+
+{{< downloadthis files/tables/ssu_final_track.txt dname="ssu_final_track" label="Download table" icon="table" type="primary" >}}
+
+# ITS
+
+```{r}
+#| echo: false
+#| eval: true
+#| label: tbl-make-pipeline-table-its
+#| tbl-cap: "Read changes through the LotuS3 pipeline."
+tmp_react <- its_rc
+make_lotus3_summ_table(tmp_react)
+```
+
+{{< downloadthis files/tables/its_final_track.txt dname="its_final_track" label="Download table" icon="table" type="primary" >}}
+
+:::
+
+{{< include include/_footer.qmd >}}

@@ -1,0 +1,24 @@
+---
+title: "Site Information"
+description: "This page provides general information about the website and site build"
+filters:
+  - stamp  
+stamp:
+  # Add specific sections to the minimal set
+  sections: 
+    - system
+    - environment
+#    - document
+    - project
+    - session
+    - extensions
+  placement: custom        
+  placement-id: stamp-info-section
+toc: false
+sidebar: false    
+---
+
+::: {#stamp-info-section}
+:::
+
+{{< include /include/_footer.qmd >}}

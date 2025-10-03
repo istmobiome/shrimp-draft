@@ -1,0 +1,14 @@
+```{mermaid}
+%%| eval: true
+%%| echo: false
+flowchart TB
+  A(<b><a href='https://mothur.org/wiki/make.file/'>make.file</a></b>) --> B(<b><a href='https://mothur.org/wiki/make.contigs/'>make.contigs</a></b>)
+  B --> C(<b><b><a href='https://mothur.org/wiki/screen.seqs/'>screen.seqs</a></b><br/><a href='https://mothur.org/wiki/unique.seqs/'>unique.seqs</a></b>)
+  C --> E(<b><a href='https://mothur.org/wiki/align.seqs/'>align.seqs</a></b>)
+  L(reference db<br/> e.g. silva seed) --> F
+  F(<b><a href='https://mothur.org/wiki/pcr.seqs/'>pcr.seqs</a></b></br>trim ref db</br>to V4 region) --> E
+  E --> I(<b><a href='https://mothur.org/wiki/screen.seqs/'>screen.seqs</a><br/><a href='https://mothur.org/wiki/filter.seqs/'>filter.seqs</a><br/><a href='https://mothur.org/wiki/unique.seqs/'>unique.seqs</a></b>)
+  I --> K[Pass to MED]
+  I --> J(<b><a href='https://mothur.org/wiki/pre.cluster/'>pre.cluster</a></b>)
+  J --> M(remove</br>negative controls)
+```

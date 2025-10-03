@@ -1,0 +1,21 @@
+---
+title: "Data Portal"
+listing: 
+  id: dada2-listing
+  contents: listings/data-dada2.yml
+metadata-files: 
+  - listings/_metadata.yml
+---
+
+{{< include include/_listing-preamble.qmd >}}
+
+Here we provide two options for processing sequence data--the detailed pipeline (listed in the table) and a [quick set of commands linked below](#asv-processing). 
+
+::: {#dada2-listing .column-body-outset-right}
+:::
+
+{{< include include/_data-dada2.qmd >}}
+
+{{< include include/_listing-footer.qmd >}}
+
+{{< include /include/_footer.qmd >}}

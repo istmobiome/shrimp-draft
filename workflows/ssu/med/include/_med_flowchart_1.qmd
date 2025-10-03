@@ -1,0 +1,29 @@
+```{mermaid}
+%%| eval: true
+%%| echo: false
+%%| fig-align: center
+flowchart LR
+  A(Start with curated</br>mothur alignment)
+  B("<b><a href='https://mothur.org/wiki/get.groups/'>get.groups</a></b><br/>(NC Samples)")
+  A --> C(Remove</br>NC Samples<br/>files needed by mothur </br>were generated in R)
+  B --> C
+  C --> D(<b><a href='https://mothur.org/wiki/remove.seqs/'>remove.seqs</a></b>)
+  C --> E(<b><a href='https://mothur.org/wiki/remove.groups/'>remove.groups</a></b>)
+  E --> H
+  D --> H(<b><a href='https://mothur.org/wiki/chimera.vsearch/'>chimera.vsearch</a></b>)
+  H --> END:::hidden
+```
+
+```{mermaid}
+%%| eval: true
+%%| echo: false
+%%| fig-align: center
+flowchart LR
+  BEGIN:::hidden --> I
+  I(<b><a href='https://mothur.org/wiki/classify.seqs/'>classify.seqs</a></b>)
+  I --> J(<b><a href='https://mothur.org/wiki/remove.lineage/'>remove.lineage</a></b>) 
+  J --> K(to <b><a href='https://merenlab.org/2014/11/04/med/'>MED pipeline</a></b>)
+
+  K --> END:::hidden 
+```
+
