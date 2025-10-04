@@ -16,17 +16,17 @@ project:
     - "!docs/"
     - "!sandbox.qmd"
     - "!common.qmd"
-    #- "!share/*/*/*_curated_data/"
 # Finished pages, comment # out to build whole site
     - "!about.qmd"
-   # - "!workflows/ssu/otu"
-   # - "!workflows/ssu/med"
-   # - "!workflows/ssu/dada2"
+    #- "!workflows/ssu/**"    
+    #- "!workflows/ssu/otu"
+    #- "!workflows/ssu/med"
+    #- "!workflows/ssu/dada2"
     - "!workflows/ssu/lotus3"
-   # - "!workflows/ssu/sampledata"
-   # - "!workflows/pub/*"
-   # - "!workflows/mg/*"
-   # - "!workflows/portal/*"
+    #- "!workflows/ssu/sampledata"
+    #- "!workflows/pub/*"
+    #- "!workflows/mg/**"
+    #- "!workflows/portal/*"
 highlight-style: arrow
 
 website:
@@ -46,8 +46,8 @@ website:
 #        href: trademark.qmd
     right: |
       © Copyright 2025 [metacrobe](https://metacrobe.github.io/) & [The Istmobiome Project](https://istmobiome.rbind.io/).
-  site-url: https://istmobiome.github.io/trans-shrimp/
-  repo-url: https://github.com/istmobiome/trans-shrimp/
+  site-url: https://istmobiome.github.io/shrimp-draft/
+  repo-url: https://github.com/istmobiome/shrimp-draft/
   repo-actions: [source, edit, issue]
   repo-link-target: "_blank"
   page-navigation: true
@@ -76,7 +76,7 @@ website:
         href: workflows/pub/index.qmd
     right:
       - icon: github
-        href: https://github.com/istmobiome/trans-shrimp/
+        href: https://github.com/istmobiome/shrimp-draft/
         aria-label: Trans Shrimp
       #- icon: question
       #  href: about.qmd
@@ -139,7 +139,7 @@ format:
       sidebar-width:	225px
       body-width:	900px
       margin-width:	250px
-    title-block-banner: true
+    title-block-banner: false
     #title-block-banner-color: "#FEFEFE"
     #title-block-banner: '#113858'
     #title-block-style: default

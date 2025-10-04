@@ -5,11 +5,6 @@ listing:
   contents: listings/data-dada2.yml
 metadata-files: 
   - listings/_metadata.yml
-format:
-  html:
-    code-fold: false
-    toc: true
-    toc-depth: 0
 ---
 
 {{< include include/_listing-preamble.qmd >}}
@@ -71,6 +66,5 @@ mapply(
   },
   files, dest_files
 )
-
 ```
 

@@ -1,1 +1,1 @@
-Sitemap: https://istmobiome.github.io/trans-shrimp/sitemap.xml
+Sitemap: https://istmobiome.github.io/shrimp-draft/sitemap.xml

@@ -17,3 +17,7 @@ format:
     anchor-sections: true
     toc: true
     toc-depth: 0
+    code-fold: false
+title-block-banner: false
+bread-crumbs: false
+page-navigation: false        

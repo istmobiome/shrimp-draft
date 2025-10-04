@@ -228,4 +228,3 @@
   workflow: metagenomic
   type: HMM database
   reference: "[@seemann2018barnap]"
-
